@@ -41,7 +41,6 @@ export const CORE_ADMIN_APPS: LauncherApp[] = [
     gradient: 'from-rose-500 via-red-600 to-orange-700',
     url: 'https://hd2lab.duckdns.org/admin/',
     adminOnly: true,
-    openExternal: true,
   },
   {
     id: 'admin-chairman',
@@ -52,7 +51,6 @@ export const CORE_ADMIN_APPS: LauncherApp[] = [
     gradient: 'from-amber-500 via-yellow-600 to-orange-700',
     url: 'https://hd2lab.duckdns.org/admin/chairman/',
     adminOnly: true,
-    openExternal: true,
   },
   {
     id: 'admin-services-mgr',
@@ -128,7 +126,6 @@ export const DEFAULT_SERVICES: LauncherApp[] = [
     iconName: 'BookOpen',
     gradient: 'from-pink-400 via-rose-500 to-red-600',
     url: 'https://hd2lab.duckdns.org/stories/',
-    openExternal: true,
   },
   {
     id: 'hd2-photo',
@@ -138,7 +135,6 @@ export const DEFAULT_SERVICES: LauncherApp[] = [
     iconName: 'Image',
     gradient: 'from-cyan-400 via-sky-500 to-blue-600',
     url: 'https://hd2lab.duckdns.org/hd2photo/',
-    openExternal: true,
   },
   {
     id: 'hd2-lingo',
