@@ -242,7 +242,7 @@ export function PagedAppGrid({
       onPointerMove={handleBgPointerMove}
       onPointerUp={handleBgPointerUp}
       onPointerCancel={handleBgPointerUp}
-      className="relative flex flex-1 touch-none flex-col justify-between overflow-hidden select-none"
+      className="relative flex min-h-0 w-full flex-1 touch-none flex-col justify-between overflow-hidden select-none"
     >
       {/* Edit mode floating Done button */}
       {editMode && (
@@ -264,9 +264,9 @@ export function PagedAppGrid({
         </div>
       )}
 
-      {/* Multi-Page Horizontal Carousel (top-to-bottom natural grid, symmetrical cells) */}
+      {/* Multi-Page Horizontal Carousel (responsive 5 rows, never clips on mobile PWA) */}
       <div
-        className="flex w-full flex-1 items-start pt-[calc(env(safe-area-inset-top)+1rem)] pb-1"
+        className="flex min-h-0 w-full flex-1 items-stretch pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-1"
         style={{
           transform: `translate3d(calc(${-currentPage * 100}% + ${swipeOffsetX}px), 0, 0)`,
           transition:
@@ -282,7 +282,7 @@ export function PagedAppGrid({
           return (
             <div
               key={pageIndex}
-              className="grid w-full shrink-0 grid-cols-4 grid-rows-[repeat(5,82px)] content-start gap-x-2 gap-y-2 px-4"
+              className="grid h-full w-full shrink-0 grid-cols-4 grid-rows-5 gap-x-2 gap-y-1.5 px-4"
             >
               {pageSlots.map((appId, localIdx) => {
                 const globalSlotIdx = pageStart + localIdx;

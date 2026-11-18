@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddAppModal } from './components/AddAppModal';
 import { AppListDrawer } from './components/AppListDrawer';
+import { ChairmanLoginModal } from './components/ChairmanLoginModal';
 import { DesktopLauncher } from './components/DesktopLauncher';
 import { LockScreen } from './components/LockScreen';
 import {
@@ -23,7 +24,7 @@ import {
 import { LauncherApp } from './types/launcher';
 
 const CUSTOM_APPS_KEY = 'hd2_launcher_custom_apps_v2';
-const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v5';
+const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v6';
 const HOME_WP_KEY = 'hd2_launcher_home_wp_v2';
 const LOCK_WP_KEY = 'hd2_launcher_lock_wp_v2';
 
@@ -63,8 +64,8 @@ function buildInitialSlots(
     }
   });
 
-  // Page 3 (slot 40): Admin SSO gate button at top
-  slots[SLOTS_PER_PAGE * 2] = ADMIN_GATE_APP.id;
+  // Page 3 (slot 59 = 5행 4열 우하단): Admin SSO gate button
+  slots[SLOTS_PER_PAGE * 3 - 1] = ADMIN_GATE_APP.id;
 
   return slots;
 }
@@ -217,15 +218,23 @@ export function App() {
       const next = [...prev];
       const existingIds = new Set(next.filter((id): id is string => id !== null));
 
-      // Ensure Page 3 has ADMIN_GATE_APP if not placed anywhere
+      // Ensure Page 3 has ADMIN_GATE_APP at bottom-right (slot 59) if not placed anywhere
       if (!existingIds.has(ADMIN_GATE_APP.id)) {
-        const p3Empty = next.findIndex(
-          (id, idx) =>
-            idx >= SLOTS_PER_PAGE * 2 && idx < SLOTS_PER_PAGE * 3 && id === null,
-        );
-        if (p3Empty !== -1) {
-          next[p3Empty] = ADMIN_GATE_APP.id;
+        const p3BottomRight = SLOTS_PER_PAGE * 3 - 1;
+        if (next[p3BottomRight] === null) {
+          next[p3BottomRight] = ADMIN_GATE_APP.id;
           existingIds.add(ADMIN_GATE_APP.id);
+        } else {
+          const p3Empty = next.findIndex(
+            (id, idx) =>
+              idx >= SLOTS_PER_PAGE * 2 &&
+              idx < SLOTS_PER_PAGE * 3 &&
+              id === null,
+          );
+          if (p3Empty !== -1) {
+            next[p3Empty] = ADMIN_GATE_APP.id;
+            existingIds.add(ADMIN_GATE_APP.id);
+          }
         }
       }
 
@@ -268,6 +277,7 @@ export function App() {
   const [isAppListOpen, setIsAppListOpen] = useState(false);
   const [isWallpaperOpen, setIsWallpaperOpen] = useState(false);
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
+  const [isChairmanLoginOpen, setIsChairmanLoginOpen] = useState(false);
 
   // Global pinch-zoom & multi-touch locking outside per-service viewports
   useEffect(() => {
@@ -360,9 +370,8 @@ export function App() {
       // Fall through to SSO login redirect
     }
 
-    // Redirect to SSO login and return to launcher
-    const nextUrl = encodeURIComponent(window.location.href);
-    window.location.href = `/auth/login?next=${nextUrl}`;
+    // Open Chairman account login modal directly (no Google login)
+    setIsChairmanLoginOpen(true);
   };
 
   const handleLaunchApp = (app: LauncherApp) => {
@@ -470,6 +479,18 @@ export function App() {
           onClose={() => setIsAddAppOpen(false)}
           onAddApp={handleAddCustomApp}
         />
+        <ChairmanLoginModal
+          isOpen={isChairmanLoginOpen}
+          onClose={() => setIsChairmanLoginOpen(false)}
+          onSuccess={async () => {
+            setIsChairmanLoginOpen(false);
+            setSsoAuthenticated(true);
+            await loadSsoAdminServices();
+            setAdminPagesOpen(true);
+            setCurrentPage(3);
+            setToastMessage('Chairman 인증 완료 · 관리자 페이지(4~5P)가 열렸습니다.');
+          }}
+        />
         {toastMessage && (
           <div className="pointer-events-none fixed top-11 right-4 z-50 rounded-xl border border-white/15 bg-slate-900/90 px-4 py-2 text-xs font-medium text-white shadow-2xl backdrop-blur-xl">
             {toastMessage}
@@ -480,8 +501,8 @@ export function App() {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-slate-950">
-      <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-950 text-white">
+    <div className="fixed inset-0 flex w-full flex-col overflow-hidden bg-slate-950 text-white">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-slate-950 text-white">
         {isLocked ? (
           <LockScreen
             wallpaperSrc={lockWallpaper}
@@ -595,6 +616,18 @@ export function App() {
         isOpen={isAddAppOpen}
         onClose={() => setIsAddAppOpen(false)}
         onAddApp={handleAddCustomApp}
+      />
+      <ChairmanLoginModal
+        isOpen={isChairmanLoginOpen}
+        onClose={() => setIsChairmanLoginOpen(false)}
+        onSuccess={async () => {
+          setIsChairmanLoginOpen(false);
+          setSsoAuthenticated(true);
+          await loadSsoAdminServices();
+          setAdminPagesOpen(true);
+          setCurrentPage(3);
+          setToastMessage('Chairman 인증 완료 · 관리자 페이지(4~5P)가 열렸습니다.');
+        }}
       />
     </div>
   );
