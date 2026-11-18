@@ -143,6 +143,7 @@ export function App() {
             ? s.href
             : `https://hd2lab.duckdns.org${s.href}`,
           adminOnly: true,
+          openExternal: true,
         }));
 
       const mergedAdmin = [

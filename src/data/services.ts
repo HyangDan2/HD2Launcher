@@ -41,6 +41,7 @@ export const CORE_ADMIN_APPS: LauncherApp[] = [
     gradient: 'from-rose-500 via-red-600 to-orange-700',
     url: 'https://hd2lab.duckdns.org/admin/',
     adminOnly: true,
+    openExternal: true,
   },
   {
     id: 'admin-chairman',
@@ -51,6 +52,7 @@ export const CORE_ADMIN_APPS: LauncherApp[] = [
     gradient: 'from-amber-500 via-yellow-600 to-orange-700',
     url: 'https://hd2lab.duckdns.org/admin/chairman/',
     adminOnly: true,
+    openExternal: true,
   },
   {
     id: 'admin-services-mgr',
