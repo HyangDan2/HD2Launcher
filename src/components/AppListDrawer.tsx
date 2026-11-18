@@ -4,8 +4,6 @@ import {
   Lock,
   Plus,
   Search,
-  Shield,
-  ShieldCheck,
   X,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -16,7 +14,6 @@ interface AppListDrawerProps {
   isOpen: boolean;
   apps: LauncherApp[];
   adminMode: boolean;
-  onToggleAdminMode: () => void;
   onClose: () => void;
   onLaunchApp: (app: LauncherApp) => void;
   onOpenAddApp: () => void;
@@ -38,7 +35,6 @@ export function AppListDrawer({
   isOpen,
   apps,
   adminMode,
-  onToggleAdminMode,
   onClose,
   onLaunchApp,
   onOpenAddApp,
@@ -69,25 +65,6 @@ export function AppListDrawer({
         </div>
 
         <div className="flex items-center gap-1.5">
-          {/* Admin Mode Toggle */}
-          <button
-            type="button"
-            onClick={onToggleAdminMode}
-            className={`inline-flex items-center gap-1 rounded-xl border px-2.5 py-1.5 text-[11px] font-semibold transition ${
-              adminMode
-                ? 'border-rose-400/50 bg-rose-500/20 text-rose-200'
-                : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
-            }`}
-            title="관리자 모드 전환"
-          >
-            {adminMode ? (
-              <ShieldCheck className="h-3.5 w-3.5 text-rose-300" />
-            ) : (
-              <Shield className="h-3.5 w-3.5" />
-            )}
-            <span>관리자</span>
-          </button>
-
           <button
             type="button"
             onClick={() => {

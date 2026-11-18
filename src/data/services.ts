@@ -11,7 +11,60 @@ export const LAUNCHER_WALLPAPERS: WallpaperOption[] = [
     label: '겨울밤 인사',
     src: '/wallpapers/lockscreen.png',
   },
+  {
+    id: 'hd2lab-dark',
+    label: 'HD²LAB Beyond',
+    src: '/wallpapers/admin-bg.png',
+  },
 ];
+
+export const ADMIN_WALLPAPER_SRC = '/wallpapers/admin-bg.png';
+
+export const ADMIN_GATE_APP: LauncherApp = {
+  id: 'admin-sso-gate',
+  name: '관리자',
+  subtitle: 'SSO 관리자 메뉴',
+  category: 'admin',
+  iconName: 'ShieldCheck',
+  gradient: 'from-rose-500 via-red-600 to-orange-700',
+  url: 'https://hd2lab.duckdns.org/auth/login',
+  internalView: 'admin-sso',
+};
+
+export const CORE_ADMIN_APPS: LauncherApp[] = [
+  {
+    id: 'admin-hq',
+    name: 'Admin HQ',
+    subtitle: '관리자 포털',
+    category: 'admin',
+    iconName: 'ShieldCheck',
+    gradient: 'from-rose-500 via-red-600 to-orange-700',
+    url: 'https://hd2lab.duckdns.org/admin/',
+    adminOnly: true,
+  },
+  {
+    id: 'admin-chairman',
+    name: 'Chairman',
+    subtitle: '최고 관리자 콘솔',
+    category: 'admin',
+    iconName: 'Crown',
+    gradient: 'from-amber-500 via-yellow-600 to-orange-700',
+    url: 'https://hd2lab.duckdns.org/admin/chairman/',
+    adminOnly: true,
+  },
+];
+
+export const ADMIN_ADD_APP: LauncherApp = {
+  id: 'admin-add-service',
+  name: '서비스 추가',
+  subtitle: '커스텀 앱 등록',
+  category: 'admin',
+  iconName: 'FolderKanban',
+  gradient: 'from-slate-600 via-slate-700 to-zinc-900',
+  url: '',
+  internalView: 'add-app',
+  adminOnly: true,
+};
 
 export const DEFAULT_SERVICES: LauncherApp[] = [
   // HQ Core
@@ -102,77 +155,5 @@ export const DEFAULT_SERVICES: LauncherApp[] = [
     gradient: 'from-indigo-400 via-blue-500 to-cyan-600',
     url: 'https://hd2lab.duckdns.org/solver/',
     allowZoom: true,
-  },
-
-  // Admin Services (관리자 모드 활성화 시 노출)
-  {
-    id: 'admin-portal',
-    name: 'Admin HQ',
-    subtitle: '관리자 포털',
-    category: 'admin',
-    iconName: 'ShieldCheck',
-    gradient: 'from-rose-500 via-red-600 to-orange-700',
-    url: 'https://hd2lab.duckdns.org/admin/',
-    adminOnly: true,
-  },
-  {
-    id: 'admin-chairman',
-    name: 'Chairman',
-    subtitle: '최고 관리자 콘솔',
-    category: 'admin',
-    iconName: 'Crown',
-    gradient: 'from-amber-500 via-yellow-600 to-orange-700',
-    url: 'https://hd2lab.duckdns.org/admin/chairman/',
-    adminOnly: true,
-  },
-  {
-    id: 'admin-editor',
-    name: 'Editor',
-    subtitle: '콘텐츠 에디터',
-    category: 'admin',
-    iconName: 'FileEdit',
-    gradient: 'from-sky-500 via-indigo-600 to-violet-700',
-    url: 'https://hd2lab.duckdns.org/admin/editor/',
-    adminOnly: true,
-  },
-  {
-    id: 'admin-hd2ai',
-    name: 'HD2AI Admin',
-    subtitle: 'AI 운영 콘솔',
-    category: 'admin',
-    iconName: 'Bot',
-    gradient: 'from-purple-500 via-fuchsia-600 to-pink-700',
-    url: 'https://hd2lab.duckdns.org/admin/hd2ai/',
-    adminOnly: true,
-  },
-  {
-    id: 'admin-hd2ai-beta',
-    name: 'HD2AI Beta',
-    subtitle: 'AI 베타 워크스페이스',
-    category: 'admin',
-    iconName: 'FlaskConical',
-    gradient: 'from-cyan-500 via-teal-600 to-emerald-700',
-    url: 'https://hd2lab.duckdns.org/admin/hd2ai-beta/',
-    adminOnly: true,
-  },
-  {
-    id: 'admin-lmpilot',
-    name: 'LMPilot',
-    subtitle: 'SSO 모델 파일럿',
-    category: 'admin',
-    iconName: 'Terminal',
-    gradient: 'from-slate-600 via-zinc-700 to-neutral-900',
-    url: 'https://hd2lab.duckdns.org/lmpilot/',
-    adminOnly: true,
-  },
-  {
-    id: 'admin-lingo',
-    name: 'Lingo Admin',
-    subtitle: '학습 콘텐츠 관리',
-    category: 'admin',
-    iconName: 'BookMarked',
-    gradient: 'from-emerald-500 via-green-600 to-teal-700',
-    url: 'https://hd2lab.duckdns.org/admin/lingo/',
-    adminOnly: true,
   },
 ];

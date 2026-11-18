@@ -34,7 +34,7 @@ export function PhoneNavBar({
   return (
     <nav
       aria-label="하단 시스템 네비게이션"
-      className="relative z-40 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] shrink-0 items-center justify-around border-t border-white/15 bg-slate-950/90 px-6 pb-[env(safe-area-inset-bottom)] backdrop-blur-2xl"
+      className="relative z-40 flex h-12 shrink-0 items-center justify-around border-t border-white/15 bg-slate-950/95 px-6 backdrop-blur-2xl"
     >
       {/* Left: Back Button */}
       <button

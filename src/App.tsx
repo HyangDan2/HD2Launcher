@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddAppModal } from './components/AddAppModal';
 import { AppListDrawer } from './components/AppListDrawer';
 import { LockScreen } from './components/LockScreen';
@@ -11,14 +11,36 @@ import { PhoneNavBar } from './components/PhoneNavBar';
 import { ServiceViewport } from './components/ServiceViewport';
 import { UpdateLogView } from './components/UpdateLogView';
 import { WallpaperModal } from './components/WallpaperModal';
-import { DEFAULT_SERVICES, LAUNCHER_WALLPAPERS } from './data/services';
+import {
+  ADMIN_ADD_APP,
+  ADMIN_GATE_APP,
+  ADMIN_WALLPAPER_SRC,
+  CORE_ADMIN_APPS,
+  DEFAULT_SERVICES,
+  LAUNCHER_WALLPAPERS,
+} from './data/services';
 import { LauncherApp } from './types/launcher';
 
 const CUSTOM_APPS_KEY = 'hd2_launcher_custom_apps_v2';
-const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v4';
+const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v5';
 const HOME_WP_KEY = 'hd2_launcher_home_wp_v2';
 const LOCK_WP_KEY = 'hd2_launcher_lock_wp_v2';
-const ADMIN_MODE_KEY = 'hd2_launcher_admin_mode_v2';
+
+const ADMIN_GRADIENTS = [
+  'from-rose-500 via-red-600 to-orange-700',
+  'from-amber-500 via-orange-600 to-rose-700',
+  'from-sky-500 via-indigo-600 to-violet-700',
+  'from-emerald-500 via-teal-600 to-cyan-700',
+  'from-purple-500 via-fuchsia-600 to-pink-700',
+];
+
+interface AuthServiceRow {
+  slug: string;
+  title: string;
+  description?: string;
+  href: string;
+  enabled?: boolean;
+}
 
 function buildInitialSlots(
   serverApps: LauncherApp[],
@@ -26,37 +48,31 @@ function buildInitialSlots(
 ): (string | null)[] {
   const slots: (string | null)[] = Array(TOTAL_SLOTS).fill(null);
 
-  // Page 1 (slots 0..19): Server-HQ apps anchored to bottom rows
-  const p1Start = Math.max(0, SLOTS_PER_PAGE - serverApps.length);
+  // Page 1 (slots 0..19): Server-HQ from top
   serverApps.forEach((app, idx) => {
-    if (p1Start + idx < SLOTS_PER_PAGE) {
-      slots[p1Start + idx] = app.id;
+    if (idx < SLOTS_PER_PAGE) {
+      slots[idx] = app.id;
     }
   });
 
-  // Page 2 (slots 20..39): Web-HQ (Main, Tech Hub, Diary, Applications, Games) anchored to bottom rows
-  const p2Start =
-    SLOTS_PER_PAGE + Math.max(0, SLOTS_PER_PAGE - webHqApps.length);
+  // Page 2 (slots 20..39): Web-HQ from top
   webHqApps.forEach((app, idx) => {
-    if (p2Start + idx < SLOTS_PER_PAGE * 2) {
-      slots[p2Start + idx] = app.id;
+    if (idx < SLOTS_PER_PAGE) {
+      slots[SLOTS_PER_PAGE + idx] = app.id;
     }
   });
+
+  // Page 3 (slot 40): Admin SSO gate button at top
+  slots[SLOTS_PER_PAGE * 2] = ADMIN_GATE_APP.id;
 
   return slots;
 }
 
 export function App() {
   const [isLocked, setIsLocked] = useState(true);
-
-  const [adminMode, setAdminMode] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(ADMIN_MODE_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
-
+  const [ssoAuthenticated, setSsoAuthenticated] = useState(false);
+  const [adminPagesOpen, setAdminPagesOpen] = useState(false);
+  const [adminServices, setAdminServices] = useState<LauncherApp[]>([]);
   const [webHqApps, setWebHqApps] = useState<LauncherApp[]>([]);
 
   const [customApps, setCustomApps] = useState<LauncherApp[]>(() => {
@@ -88,7 +104,59 @@ export function App() {
     }
   });
 
-  // Load synced Web-HQ apps/games from public/data/web-hq-apps.json
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const loadSsoAdminServices = useCallback(async () => {
+    try {
+      const res = await fetch('/auth/services', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { services?: AuthServiceRow[] };
+      const rows = Array.isArray(data.services) ? data.services : [];
+      const dynamicApps: LauncherApp[] = rows
+        .filter((s) => s.enabled !== false && s.href)
+        .map((s, idx) => ({
+          id: `sso-admin-${s.slug}`,
+          name: s.title || s.slug,
+          subtitle: s.description || 'Admin Service',
+          category: 'admin',
+          iconName: 'ShieldCheck',
+          gradient: ADMIN_GRADIENTS[idx % ADMIN_GRADIENTS.length],
+          url: s.href.startsWith('http')
+            ? s.href
+            : `https://hd2lab.duckdns.org${s.href}`,
+          adminOnly: true,
+        }));
+
+      const mergedAdmin = [
+        ...CORE_ADMIN_APPS,
+        ...dynamicApps,
+        ADMIN_ADD_APP,
+      ];
+      setAdminServices(mergedAdmin);
+    } catch {
+      setAdminServices([...CORE_ADMIN_APPS, ADMIN_ADD_APP]);
+    }
+  }, []);
+
+  // Check SSO session on mount
+  useEffect(() => {
+    fetch('/auth/session', { credentials: 'include', cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.authenticated === true) {
+          setSsoAuthenticated(true);
+          loadSsoAdminServices();
+        }
+      })
+      .catch(() => {
+        // Not authenticated or offline
+      });
+  }, [loadSsoAdminServices]);
+
+  // Load synced Web-HQ apps/games
   useEffect(() => {
     fetch('/data/web-hq-apps.json', { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
@@ -98,14 +166,17 @@ export function App() {
         }
       })
       .catch(() => {
-        // ignore fetch errors offline
+        // ignore
       });
   }, []);
 
   const visibleApps = useMemo(() => {
-    const all = [...DEFAULT_SERVICES, ...webHqApps, ...customApps];
-    return adminMode ? all : all.filter((a) => !a.adminOnly);
-  }, [webHqApps, customApps, adminMode]);
+    const base = [...DEFAULT_SERVICES, ...webHqApps, ADMIN_GATE_APP, ...customApps];
+    if (ssoAuthenticated && adminPagesOpen) {
+      return [...base, ...adminServices];
+    }
+    return base;
+  }, [webHqApps, customApps, ssoAuthenticated, adminPagesOpen, adminServices]);
 
   const appsById = useMemo(
     () => new Map(visibleApps.map((app) => [app.id, app])),
@@ -124,67 +195,59 @@ export function App() {
     } catch {
       // ignore
     }
-    return buildInitialSlots(
-      DEFAULT_SERVICES.filter((a) => !a.adminOnly),
-      [],
-    );
+    return buildInitialSlots(DEFAULT_SERVICES, []);
   });
 
-  // Place newly synced Web-HQ apps on Page 2 (bottom-aligned) & admin/custom apps into available slots
+  // Sync Web-HQ apps onto Page 2 (top-down) & Admin services onto Pages 4-5 (top-down)
   useEffect(() => {
     setSlots((prev) => {
       const next = [...prev];
       const existingIds = new Set(next.filter((id): id is string => id !== null));
 
-      // Place Web-HQ apps on Page 2 (slots 20..39) from bottom up if not yet placed
-      const unplacedWebHq = webHqApps.filter((a) => !existingIds.has(a.id));
-      if (unplacedWebHq.length > 0) {
-        const p2Slice = next.slice(SLOTS_PER_PAGE, SLOTS_PER_PAGE * 2);
-        const p2IsEmpty = p2Slice.every((s) => s === null);
-        if (p2IsEmpty) {
-          const start =
-            SLOTS_PER_PAGE +
-            Math.max(0, SLOTS_PER_PAGE - unplacedWebHq.length);
-          unplacedWebHq.forEach((app, idx) => {
-            if (start + idx < SLOTS_PER_PAGE * 2) {
-              next[start + idx] = app.id;
-              existingIds.add(app.id);
-            }
-          });
-        } else {
-          for (const app of unplacedWebHq) {
-            const emptyIdx = next.findIndex(
-              (id, idx) => idx >= SLOTS_PER_PAGE && id === null,
-            );
-            if (emptyIdx !== -1) {
-              next[emptyIdx] = app.id;
-              existingIds.add(app.id);
-            }
+      // Ensure Page 3 has ADMIN_GATE_APP if not placed anywhere
+      if (!existingIds.has(ADMIN_GATE_APP.id)) {
+        const p3Empty = next.findIndex(
+          (id, idx) =>
+            idx >= SLOTS_PER_PAGE * 2 && idx < SLOTS_PER_PAGE * 3 && id === null,
+        );
+        if (p3Empty !== -1) {
+          next[p3Empty] = ADMIN_GATE_APP.id;
+          existingIds.add(ADMIN_GATE_APP.id);
+        }
+      }
+
+      // Page 2 (slots 20..39): Web-HQ apps from top
+      for (const app of webHqApps) {
+        if (!existingIds.has(app.id)) {
+          const p2Empty = next.findIndex(
+            (id, idx) =>
+              idx >= SLOTS_PER_PAGE && idx < SLOTS_PER_PAGE * 2 && id === null,
+          );
+          if (p2Empty !== -1) {
+            next[p2Empty] = app.id;
+            existingIds.add(app.id);
           }
         }
       }
 
-      // Place remaining visible apps (e.g. adminMode toggled on, or custom apps)
-      for (const app of visibleApps) {
-        if (!existingIds.has(app.id)) {
-          // Prefer Page 3 (slots 40..59) for admin apps if available, else any empty slot
-          const preferredStart = app.adminOnly ? SLOTS_PER_PAGE * 2 : 0;
-          let emptyIdx = next.findIndex(
-            (id, idx) => idx >= preferredStart && id === null,
-          );
-          if (emptyIdx === -1) {
-            emptyIdx = next.findIndex((id) => id === null);
-          }
-          if (emptyIdx !== -1) {
-            next[emptyIdx] = app.id;
-            existingIds.add(app.id);
+      // Pages 4 & 5 (slots 60..99): Admin services sequentially from top
+      if (ssoAuthenticated && adminPagesOpen) {
+        for (const app of adminServices) {
+          if (!existingIds.has(app.id)) {
+            const p45Empty = next.findIndex(
+              (id, idx) => idx >= SLOTS_PER_PAGE * 3 && id === null,
+            );
+            if (p45Empty !== -1) {
+              next[p45Empty] = app.id;
+              existingIds.add(app.id);
+            }
           }
         }
       }
 
       return next;
     });
-  }, [visibleApps, webHqApps]);
+  }, [webHqApps, ssoAuthenticated, adminPagesOpen, adminServices]);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [editMode, setEditMode] = useState(false);
@@ -192,7 +255,6 @@ export function App() {
   const [isAppListOpen, setIsAppListOpen] = useState(false);
   const [isWallpaperOpen, setIsWallpaperOpen] = useState(false);
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Global pinch-zoom & multi-touch locking outside per-service viewports
   useEffect(() => {
@@ -250,14 +312,6 @@ export function App() {
   }, [lockWallpaper]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(ADMIN_MODE_KEY, String(adminMode));
-    } catch {
-      // ignore
-    }
-  }, [adminMode]);
-
-  useEffect(() => {
     if (!toastMessage) return;
     const t = setTimeout(() => setToastMessage(null), 2400);
     return () => clearTimeout(t);
@@ -274,23 +328,43 @@ export function App() {
     });
   };
 
+  const handleOpenAdminGate = async () => {
+    try {
+      const res = await fetch('/auth/session', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      const data = res.ok ? await res.json() : null;
+      if (data && data.authenticated === true) {
+        setSsoAuthenticated(true);
+        await loadSsoAdminServices();
+        setAdminPagesOpen(true);
+        setCurrentPage(3); // Slide directly to Page 4
+        setToastMessage('SSO 인증 확인 · 관리자 페이지(4~5P)가 열렸습니다.');
+        return;
+      }
+    } catch {
+      // Fall through to SSO login redirect
+    }
+
+    // Redirect to SSO login and return to launcher
+    const nextUrl = encodeURIComponent(window.location.href);
+    window.location.href = `/auth/login?next=${nextUrl}`;
+  };
+
   const handleLaunchApp = (app: LauncherApp) => {
     setIsAppListOpen(false);
     setIsWallpaperOpen(false);
-    setActiveApp(app);
-  };
 
-  const handleToggleAdminMode = () => {
-    setAdminMode((prev) => {
-      const next = !prev;
-      setToastMessage(
-        next ? '관리자 모드가 활성화되었습니다.' : '관리자 모드가 해제되었습니다.',
-      );
-      if (!next && activeApp?.adminOnly) {
-        setActiveApp(null);
-      }
-      return next;
-    });
+    if (app.internalView === 'admin-sso') {
+      handleOpenAdminGate();
+      return;
+    }
+    if (app.internalView === 'add-app') {
+      setIsAddAppOpen(true);
+      return;
+    }
+    setActiveApp(app);
   };
 
   const handleNavBack = () => {
@@ -347,6 +421,10 @@ export function App() {
     setToastMessage(`"${newApp.name}" 서비스가 추가되었습니다.`);
   };
 
+  const pageCount = ssoAuthenticated && adminPagesOpen ? 5 : 3;
+  const activeWallpaper =
+    currentPage >= 3 ? ADMIN_WALLPAPER_SRC : homeWallpaper;
+
   return (
     <div className="flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-slate-950 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(139,92,246,0.14),_transparent_55%)] sm:p-4">
       <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-950 text-white sm:h-[860px] sm:max-h-[92vh] sm:w-[430px] sm:rounded-[44px] sm:border sm:border-white/20 sm:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.85)]">
@@ -359,19 +437,20 @@ export function App() {
           <>
             {/* Main Viewport Area (above persistent PhoneNavBar) */}
             <div className="relative flex flex-1 flex-col overflow-hidden">
-              {/* Home Wallpaper */}
+              {/* Home / Admin Wallpaper */}
               <img
-                src={homeWallpaper}
+                src={activeWallpaper}
                 alt="홈 배경화면"
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300"
                 draggable={false}
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/35 via-transparent to-slate-950/55" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/30 via-transparent to-slate-950/50" />
 
-              {/* Paged Home Grid (No top status bar) */}
+              {/* Paged Home Grid */}
               <PagedAppGrid
                 appsById={appsById}
                 slots={displaySlots}
+                pageCount={pageCount}
                 currentPage={currentPage}
                 editMode={editMode}
                 onChangePage={setCurrentPage}
@@ -398,8 +477,7 @@ export function App() {
               <AppListDrawer
                 isOpen={isAppListOpen}
                 apps={visibleApps}
-                adminMode={adminMode}
-                onToggleAdminMode={handleToggleAdminMode}
+                adminMode={ssoAuthenticated && adminPagesOpen}
                 onClose={() => setIsAppListOpen(false)}
                 onLaunchApp={handleLaunchApp}
                 onOpenAddApp={() => setIsAddAppOpen(true)}
@@ -429,7 +507,7 @@ export function App() {
               />
             </div>
 
-            {/* Persistent Bottom Navigation Bar (Vibration + Ripple Effect) */}
+            {/* Persistent Bottom Navigation Bar */}
             <PhoneNavBar
               canGoBack={Boolean(
                 activeApp ||

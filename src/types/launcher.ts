@@ -16,7 +16,7 @@ export interface LauncherApp {
   gradient: string;
   url: string;
   thumbnailUrl?: string;
-  internalView?: 'update-log';
+  internalView?: 'update-log' | 'admin-sso' | 'add-app';
   adminOnly?: boolean;
   /** 서비스별 메인 뷰포트 확대/스크롤 허용 여부 */
   allowZoom?: boolean;

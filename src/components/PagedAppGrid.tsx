@@ -3,13 +3,14 @@ import { useRef, useState } from 'react';
 import { LauncherApp } from '../types/launcher';
 import { IconGlyph } from './IconGlyph';
 
-export const MAX_PAGES = 3;
+export const MAX_PAGES = 5;
 export const SLOTS_PER_PAGE = 20; // 4 cols x 5 rows
 export const TOTAL_SLOTS = MAX_PAGES * SLOTS_PER_PAGE;
 
 interface PagedAppGridProps {
   appsById: Map<string, LauncherApp>;
   slots: (string | null)[];
+  pageCount: number;
   currentPage: number;
   editMode: boolean;
   onChangePage: (page: number) => void;
@@ -24,6 +25,7 @@ interface PagedAppGridProps {
 export function PagedAppGrid({
   appsById,
   slots,
+  pageCount,
   currentPage,
   editMode,
   onChangePage,
@@ -103,12 +105,15 @@ export function PagedAppGrid({
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
 
-    if (!isDraggingIconRef.current && Math.hypot(dx, dy) > 8) {
-      if (longPressTimerRef.current !== null) {
+    if (!editMode) {
+      if (Math.hypot(dx, dy) > 8 && longPressTimerRef.current !== null) {
         window.clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
       }
-      // Allow dragging in editMode OR if user deliberately drags icon
+      return;
+    }
+
+    if (!isDraggingIconRef.current && Math.hypot(dx, dy) > 8) {
       isDraggingIconRef.current = true;
       setDraggingFromSlot(start.slotIndex);
     }
@@ -136,10 +141,10 @@ export function PagedAppGrid({
               edgeFlipTimerRef.current = null;
             }, 420);
           }
-        } else if (relX > rect.width - 28 && currentPage < MAX_PAGES - 1) {
+        } else if (relX > rect.width - 28 && currentPage < pageCount - 1) {
           if (edgeFlipTimerRef.current === null) {
             edgeFlipTimerRef.current = window.setTimeout(() => {
-              onChangePage(Math.min(MAX_PAGES - 1, currentPage + 1));
+              onChangePage(Math.min(pageCount - 1, currentPage + 1));
               edgeFlipTimerRef.current = null;
             }, 420);
           }
@@ -211,7 +216,7 @@ export function PagedAppGrid({
       isSwipingPageRef.current = true;
       // Dampen resistance at page boundaries
       const atLeftEdge = currentPage === 0 && dx > 0;
-      const atRightEdge = currentPage === MAX_PAGES - 1 && dx < 0;
+      const atRightEdge = currentPage === pageCount - 1 && dx < 0;
       setSwipeOffsetX(atLeftEdge || atRightEdge ? dx * 0.25 : dx);
     }
   };
@@ -219,7 +224,7 @@ export function PagedAppGrid({
   const handleBgPointerUp = () => {
     clearTimers();
     if (isSwipingPageRef.current) {
-      if (swipeOffsetX < -48 && currentPage < MAX_PAGES - 1) {
+      if (swipeOffsetX < -48 && currentPage < pageCount - 1) {
         onChangePage(currentPage + 1);
       } else if (swipeOffsetX > 48 && currentPage > 0) {
         onChangePage(currentPage - 1);
@@ -259,9 +264,9 @@ export function PagedAppGrid({
         </div>
       )}
 
-      {/* 3-Page Horizontal Carousel (anchored to bottom, compact symmetrical cells) */}
+      {/* Multi-Page Horizontal Carousel (top-to-bottom natural grid, symmetrical cells) */}
       <div
-        className="flex w-full flex-1 items-end pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-1"
+        className="flex w-full flex-1 items-start pt-[calc(env(safe-area-inset-top)+1rem)] pb-1"
         style={{
           transform: `translate3d(calc(${-currentPage * 100}% + ${swipeOffsetX}px), 0, 0)`,
           transition:
@@ -270,14 +275,14 @@ export function PagedAppGrid({
               : 'none',
         }}
       >
-        {Array.from({ length: MAX_PAGES }).map((_, pageIndex) => {
+        {Array.from({ length: pageCount }).map((_, pageIndex) => {
           const pageStart = pageIndex * SLOTS_PER_PAGE;
           const pageSlots = slots.slice(pageStart, pageStart + SLOTS_PER_PAGE);
 
           return (
             <div
               key={pageIndex}
-              className="grid w-full shrink-0 grid-cols-4 grid-rows-[repeat(5,82px)] content-end gap-x-2 gap-y-2 px-4"
+              className="grid w-full shrink-0 grid-cols-4 grid-rows-[repeat(5,82px)] content-start gap-x-2 gap-y-2 px-4"
             >
               {pageSlots.map((appId, localIdx) => {
                 const globalSlotIdx = pageStart + localIdx;
@@ -379,9 +384,9 @@ export function PagedAppGrid({
         })}
       </div>
 
-      {/* Page Indicator Dots (Max 3 Pages) */}
-      <div className="relative z-10 flex items-center justify-center gap-2 pb-3">
-        {Array.from({ length: MAX_PAGES }).map((_, idx) => (
+      {/* Page Indicator Dots */}
+      <div className="relative z-10 flex items-center justify-center gap-2 pb-2.5">
+        {Array.from({ length: pageCount }).map((_, idx) => (
           <button
             key={idx}
             type="button"
