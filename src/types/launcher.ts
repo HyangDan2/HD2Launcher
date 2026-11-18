@@ -18,6 +18,8 @@ export interface LauncherApp {
   thumbnailUrl?: string;
   internalView?: 'update-log' | 'admin-sso' | 'add-app';
   adminOnly?: boolean;
+  /** X-Frame-Options/CSP 차단 서비스는 새 탭으로 바로 실행 */
+  openExternal?: boolean;
   /** 서비스별 메인 뷰포트 확대/스크롤 허용 여부 */
   allowZoom?: boolean;
 }

@@ -76,10 +76,10 @@ export function DesktopWindow({
         win.maximized
           ? {
               zIndex: win.zIndex,
-              left: 16,
-              top: 44,
-              right: 16,
-              bottom: 88,
+              left: 10,
+              top: 40,
+              right: 10,
+              bottom: 10,
             }
           : {
               zIndex: win.zIndex,

@@ -115,6 +115,17 @@ export const DEFAULT_SERVICES: LauncherApp[] = [
     iconName: 'BookOpen',
     gradient: 'from-pink-400 via-rose-500 to-red-600',
     url: 'https://hd2lab.duckdns.org/stories/',
+    openExternal: true,
+  },
+  {
+    id: 'hd2-photo',
+    name: 'HD2Photo',
+    subtitle: '포토 클라우드',
+    category: 'service-hub',
+    iconName: 'Image',
+    gradient: 'from-cyan-400 via-sky-500 to-blue-600',
+    url: 'https://hd2lab.duckdns.org/hd2photo/',
+    openExternal: true,
   },
   {
     id: 'hd2-lingo',

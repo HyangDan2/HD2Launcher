@@ -1,11 +1,15 @@
 import {
   Check,
+  ChevronLeft,
+  ChevronRight,
   Image as ImageIcon,
+  LayoutGrid,
   Lock,
   Pencil,
   Search,
+  X,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LauncherApp } from '../types/launcher';
 import { DesktopLockScreen } from './DesktopLockScreen';
 import { DesktopSpotlight } from './DesktopSpotlight';
@@ -64,6 +68,9 @@ export function DesktopLauncher({
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [pcHomeWp, setPcHomeWp] = useState(PC_HOME_WP);
   const [wpMenuOpen, setWpMenuOpen] = useState(false);
+  const [dockPinnedOpen, setDockPinnedOpen] = useState(false);
+
+  const wheelLockRef = useRef(0);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000 * 15);
@@ -78,11 +85,18 @@ export function DesktopLauncher({
       } else if (e.key === 'Escape') {
         setSpotlightOpen(false);
         setWpMenuOpen(false);
+        setDockPinnedOpen(false);
+      } else if (!isLocked && !spotlightOpen) {
+        if (e.key === 'ArrowRight' && currentPage < pageCount - 1) {
+          onChangePage(currentPage + 1);
+        } else if (e.key === 'ArrowLeft' && currentPage > 0) {
+          onChangePage(currentPage - 1);
+        }
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [isLocked]);
+  }, [isLocked, spotlightOpen, currentPage, pageCount, onChangePage]);
 
   const handleLaunchApp = (app: LauncherApp) => {
     if (app.internalView === 'admin-sso') {
@@ -93,7 +107,13 @@ export function DesktopLauncher({
       onOpenAddApp();
       return;
     }
+    if (app.openExternal && app.url) {
+      window.open(app.url, '_blank', 'noopener,noreferrer');
+      setDockPinnedOpen(false);
+      return;
+    }
 
+    setDockPinnedOpen(false);
     setWindows((prev) => {
       const existing = prev.find((w) => w.app.id === app.id);
       const nextZ = topZ + 1;
@@ -107,19 +127,34 @@ export function DesktopLauncher({
         );
       }
 
-      const offset = (prev.length % 5) * 26;
+      const offset = (prev.length % 4) * 24;
       return [
         ...prev,
         {
           app,
           minimized: false,
-          maximized: false,
+          maximized: true,
           zIndex: nextZ,
-          x: 490 + offset,
-          y: 56 + offset,
+          x: 140 + offset,
+          y: 52 + offset,
         },
       ];
     });
+  };
+
+  const handleWheelPageFlip = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (windows.some((w) => !w.minimized)) return;
+    const nowMs = Date.now();
+    if (nowMs - wheelLockRef.current < 340) return;
+
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (delta > 32 && currentPage < pageCount - 1) {
+      wheelLockRef.current = nowMs;
+      onChangePage(currentPage + 1);
+    } else if (delta < -32 && currentPage > 0) {
+      wheelLockRef.current = nowMs;
+      onChangePage(currentPage - 1);
+    }
   };
 
   const dockPinnedIds = [
@@ -157,6 +192,8 @@ export function DesktopLauncher({
   });
 
   const activeWallpaper = currentPage >= 3 ? PC_ADMIN_WP : pcHomeWp;
+  const hasVisibleWindow = windows.some((w) => !w.minimized);
+  const showRightDock = !hasVisibleWindow || dockPinnedOpen;
 
   const spaceTabs = [
     { page: 0, label: '1P Server-HQ' },
@@ -171,7 +208,10 @@ export function DesktopLauncher({
   ];
 
   return (
-    <div className="relative flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-white select-none">
+    <div
+      onWheel={handleWheelPageFlip}
+      className="relative flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-white select-none"
+    >
       {/* 16:9 PC Wallpaper */}
       <img
         src={activeWallpaper}
@@ -182,7 +222,7 @@ export function DesktopLauncher({
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/55 via-slate-950/10 to-transparent" />
 
       {/* Top macOS Menu Bar */}
-      <header className="relative z-40 flex h-8 shrink-0 items-center justify-between border-b border-white/10 bg-slate-950/65 px-4 text-xs backdrop-blur-2xl">
+      <header className="relative z-40 flex h-8 shrink-0 items-center justify-between border-b border-white/10 bg-slate-950/70 px-4 text-xs backdrop-blur-2xl">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 font-semibold text-white">
             <span className="flex h-4 w-4 items-center justify-center rounded bg-gradient-to-br from-sky-400 to-indigo-600 text-[9px] font-bold">
@@ -297,26 +337,50 @@ export function DesktopLauncher({
         </div>
       </header>
 
-      {/* Main Desktop Area (Left-aligned grid keeps right-side character clear) */}
-      <main className="relative flex flex-1 overflow-hidden pb-20">
-        <div className="flex h-full w-full max-w-[440px] flex-col pl-4 pt-2">
-          <PagedAppGrid
-            appsById={appsById}
-            slots={slots}
-            pageCount={pageCount}
-            currentPage={currentPage}
-            editMode={editMode}
-            onChangePage={onChangePage}
-            onEnterEditMode={onEnterEditMode}
-            onExitEditMode={onExitEditMode}
-            onMoveSlot={onMoveSlot}
-            onLaunchApp={handleLaunchApp}
-            onRemoveCustomApp={onRemoveCustomApp}
-            onOpenWallpaperPicker={() => setWpMenuOpen(true)}
-          />
+      {/* Main Desktop Area (Left-aligned grid + crisp page arrows) */}
+      <main className="relative flex flex-1 overflow-hidden">
+        <div className="relative flex h-full w-full max-w-[460px] items-center pl-4 pr-2 pt-2 pb-4">
+          <button
+            type="button"
+            disabled={currentPage === 0}
+            onClick={() => onChangePage(Math.max(0, currentPage - 1))}
+            aria-label="이전 페이지"
+            className="z-20 mr-1 flex h-9 w-7 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-slate-950/45 text-white/80 backdrop-blur-md transition hover:bg-slate-950/80 hover:text-white disabled:opacity-20"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex h-full min-w-0 flex-1 flex-col">
+            <PagedAppGrid
+              appsById={appsById}
+              slots={slots}
+              pageCount={pageCount}
+              currentPage={currentPage}
+              editMode={editMode}
+              onChangePage={onChangePage}
+              onEnterEditMode={onEnterEditMode}
+              onExitEditMode={onExitEditMode}
+              onMoveSlot={onMoveSlot}
+              onLaunchApp={handleLaunchApp}
+              onRemoveCustomApp={onRemoveCustomApp}
+              onOpenWallpaperPicker={() => setWpMenuOpen(true)}
+            />
+          </div>
+
+          <button
+            type="button"
+            disabled={currentPage >= pageCount - 1}
+            onClick={() =>
+              onChangePage(Math.min(pageCount - 1, currentPage + 1))
+            }
+            aria-label="다음 페이지"
+            className="z-20 ml-1 flex h-9 w-7 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-slate-950/45 text-white/80 backdrop-blur-md transition hover:bg-slate-950/80 hover:text-white disabled:opacity-20"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Multi-Window Desktop App Windows */}
+        {/* Multi-Window Desktop App Windows (Full Viewport by default) */}
         {windows.map((win) => (
           <DesktopWindow
             key={win.app.id}
@@ -362,11 +426,17 @@ export function DesktopLauncher({
         ))}
       </main>
 
-      {/* Bottom macOS Dock */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-3 z-40 flex justify-center px-4">
+      {/* Right-side Vertical Dock (Auto-hides when an app window is open) */}
+      <div
+        className={`pointer-events-none fixed inset-y-0 right-3 z-40 flex items-center transition-all duration-250 ${
+          showRightDock
+            ? 'translate-x-0 opacity-100'
+            : 'translate-x-24 opacity-0'
+        }`}
+      >
         <nav
-          aria-label="macOS Dock"
-          className="pointer-events-auto flex items-center gap-2.5 rounded-[22px] border border-white/20 bg-slate-900/65 px-3.5 py-2 shadow-2xl backdrop-blur-2xl"
+          aria-label="우측 런처 Dock"
+          className="pointer-events-auto flex flex-col items-center gap-2.5 rounded-[22px] border border-white/20 bg-slate-900/70 px-2 py-3 shadow-2xl backdrop-blur-2xl"
         >
           {dockApps.map((app) => {
             const openWin = windows.find((w) => w.app.id === app.id);
@@ -375,15 +445,15 @@ export function DesktopLauncher({
                 key={app.id}
                 type="button"
                 onClick={() => handleLaunchApp(app)}
-                className="group relative flex flex-col items-center focus:outline-none"
+                className="group relative flex items-center focus:outline-none"
                 title={`${app.name} — ${app.subtitle}`}
               >
-                <span className="pointer-events-none absolute -top-8 rounded-lg border border-white/15 bg-slate-900/95 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-white opacity-0 shadow transition group-hover:opacity-100">
+                <span className="pointer-events-none absolute right-14 rounded-lg border border-white/15 bg-slate-900/95 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-white opacity-0 shadow transition group-hover:opacity-100">
                   {app.name}
                 </span>
 
                 <div
-                  className={`flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${app.gradient} text-white shadow-lg ring-1 ring-white/25 transition-all duration-150 group-hover:-translate-y-1.5 group-hover:scale-110 active:scale-95`}
+                  className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${app.gradient} text-white shadow-lg ring-1 ring-white/25 transition-all duration-150 group-hover:-translate-x-1 group-hover:scale-110 active:scale-95`}
                 >
                   {app.thumbnailUrl ? (
                     <img
@@ -392,12 +462,12 @@ export function DesktopLauncher({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <IconGlyph name={app.iconName} className="h-6 w-6" />
+                    <IconGlyph name={app.iconName} className="h-5 w-5" />
                   )}
                 </div>
 
                 <span
-                  className={`mt-1 h-1 w-1 rounded-full ${
+                  className={`ml-1 h-1.5 w-1.5 rounded-full ${
                     openWin ? 'bg-white opacity-100' : 'opacity-0'
                   }`}
                 />
@@ -406,6 +476,23 @@ export function DesktopLauncher({
           })}
         </nav>
       </div>
+
+      {/* Bottom-Right Floating Launcher Toggle (visible when app window is open) */}
+      {hasVisibleWindow && (
+        <button
+          type="button"
+          onClick={() => setDockPinnedOpen((p) => !p)}
+          className="fixed right-4 bottom-4 z-50 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/25 bg-slate-900/85 text-white shadow-2xl backdrop-blur-xl transition hover:scale-105 hover:bg-slate-800 active:scale-95"
+          title={dockPinnedOpen ? '런처 Dock 닫기' : '런처 Dock 열기'}
+          aria-label="런처 Dock 토글"
+        >
+          {dockPinnedOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <LayoutGrid className="h-5 w-5 text-sky-300" />
+          )}
+        </button>
+      )}
 
       <DesktopSpotlight
         isOpen={spotlightOpen}

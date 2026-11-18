@@ -24,7 +24,7 @@ import {
 import { LauncherApp } from './types/launcher';
 
 const CUSTOM_APPS_KEY = 'hd2_launcher_custom_apps_v2';
-const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v6';
+const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v7';
 const HOME_WP_KEY = 'hd2_launcher_home_wp_v2';
 const LOCK_WP_KEY = 'hd2_launcher_lock_wp_v2';
 
@@ -384,6 +384,11 @@ export function App() {
     }
     if (app.internalView === 'add-app') {
       setIsAddAppOpen(true);
+      return;
+    }
+    if (app.openExternal && app.url) {
+      window.open(app.url, '_blank', 'noopener,noreferrer');
+      setToastMessage(`${app.name} — 새 탭에서 열었습니다.`);
       return;
     }
     setActiveApp(app);
