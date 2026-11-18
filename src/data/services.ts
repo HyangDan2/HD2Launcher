@@ -52,6 +52,17 @@ export const CORE_ADMIN_APPS: LauncherApp[] = [
     url: 'https://hd2lab.duckdns.org/admin/chairman/',
     adminOnly: true,
   },
+  {
+    id: 'admin-services-mgr',
+    name: '서비스 관리',
+    subtitle: '등록 서비스 설정',
+    category: 'admin',
+    iconName: 'Settings',
+    gradient: 'from-sky-500 via-indigo-600 to-violet-700',
+    url: '',
+    internalView: 'admin-services',
+    adminOnly: true,
+  },
 ];
 
 export const ADMIN_ADD_APP: LauncherApp = {

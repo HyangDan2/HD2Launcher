@@ -40,6 +40,7 @@ interface DesktopLauncherProps {
   onRemoveCustomApp: (id: string) => void;
   onOpenAdminGate: () => void;
   onOpenAddApp: () => void;
+  onServicesUpdated: () => void;
 }
 
 export function DesktopLauncher({
@@ -61,6 +62,7 @@ export function DesktopLauncher({
   onRemoveCustomApp,
   onOpenAdminGate,
   onOpenAddApp,
+  onServicesUpdated,
 }: DesktopLauncherProps) {
   const [now, setNow] = useState(() => new Date());
   const [windows, setWindows] = useState<OpenWindowState[]>([]);
@@ -422,6 +424,7 @@ export function DesktopLauncher({
                 ),
               )
             }
+            onServicesUpdated={onServicesUpdated}
           />
         ))}
       </main>

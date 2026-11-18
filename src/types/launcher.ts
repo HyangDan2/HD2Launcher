@@ -16,7 +16,7 @@ export interface LauncherApp {
   gradient: string;
   url: string;
   thumbnailUrl?: string;
-  internalView?: 'update-log' | 'admin-sso' | 'add-app';
+  internalView?: 'update-log' | 'admin-sso' | 'admin-services' | 'add-app';
   adminOnly?: boolean;
   /** X-Frame-Options/CSP 차단 서비스는 새 탭으로 바로 실행 */
   openExternal?: boolean;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddAppModal } from './components/AddAppModal';
+import { AdminServicesView } from './components/AdminServicesView';
 import { AppListDrawer } from './components/AppListDrawer';
 import { ChairmanLoginModal } from './components/ChairmanLoginModal';
 import { DesktopLauncher } from './components/DesktopLauncher';
@@ -478,6 +479,7 @@ export function App() {
           }}
           onOpenAdminGate={handleOpenAdminGate}
           onOpenAddApp={() => setIsAddAppOpen(true)}
+          onServicesUpdated={loadSsoAdminServices}
         />
         <AddAppModal
           isOpen={isAddAppOpen}
@@ -546,9 +548,11 @@ export function App() {
                 onOpenWallpaperPicker={() => setIsWallpaperOpen(true)}
               />
 
-              {/* Internal Update Log or Service Viewport */}
+              {/* Internal Views or Service Viewport */}
               {activeApp?.internalView === 'update-log' ? (
                 <UpdateLogView />
+              ) : activeApp?.internalView === 'admin-services' ? (
+                <AdminServicesView onServicesUpdated={loadSsoAdminServices} />
               ) : (
                 activeApp && <ServiceViewport app={activeApp} />
               )}

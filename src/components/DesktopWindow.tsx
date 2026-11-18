@@ -1,6 +1,7 @@
 import { ExternalLink, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { LauncherApp } from '../types/launcher';
+import { AdminServicesView } from './AdminServicesView';
 import { IconGlyph } from './IconGlyph';
 import { UpdateLogView } from './UpdateLogView';
 
@@ -20,6 +21,7 @@ interface DesktopWindowProps {
   onMinimize: () => void;
   onToggleMaximize: () => void;
   onMove: (x: number, y: number) => void;
+  onServicesUpdated: () => void;
 }
 
 export function DesktopWindow({
@@ -29,6 +31,7 @@ export function DesktopWindow({
   onMinimize,
   onToggleMaximize,
   onMove,
+  onServicesUpdated,
 }: DesktopWindowProps) {
   const [reloadSeq, setReloadSeq] = useState(0);
   const dragStartRef = useRef<{
@@ -167,6 +170,8 @@ export function DesktopWindow({
       <div className="relative flex-1 overflow-hidden bg-slate-950">
         {app.internalView === 'update-log' ? (
           <UpdateLogView />
+        ) : app.internalView === 'admin-services' ? (
+          <AdminServicesView onServicesUpdated={onServicesUpdated} />
         ) : (
           <>
             <iframe

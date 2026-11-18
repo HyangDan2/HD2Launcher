@@ -56,6 +56,7 @@ export function PagedAppGrid({
 
   const bgSwipeStartRef = useRef<{ x: number; y: number } | null>(null);
   const isSwipingPageRef = useRef(false);
+  const bgMovedRef = useRef(false);
 
   const clearTimers = () => {
     if (longPressTimerRef.current !== null) {
@@ -195,13 +196,25 @@ export function PagedAppGrid({
 
   // --- Background / Empty Slot Swipe & Long-Press ---
   const handleBgPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    clearTimers();
+    const startedOnIcon = Boolean(
+      (e.target as HTMLElement).closest('[data-has-app="true"]'),
+    );
+
+    if (!startedOnIcon) {
+      clearTimers();
+    } else if (bgLongPressTimerRef.current !== null) {
+      window.clearTimeout(bgLongPressTimerRef.current);
+      bgLongPressTimerRef.current = null;
+    }
+
     bgSwipeStartRef.current = { x: e.clientX, y: e.clientY };
     isSwipingPageRef.current = false;
+    bgMovedRef.current = false;
 
-    if (!editMode) {
+    // Only start wallpaper long-press timer when pressing empty space (never on an icon!)
+    if (!editMode && !startedOnIcon) {
       bgLongPressTimerRef.current = window.setTimeout(() => {
-        if (!isSwipingPageRef.current) {
+        if (!isSwipingPageRef.current && !bgMovedRef.current) {
           if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
             navigator.vibrate?.(18);
           }
@@ -218,9 +231,12 @@ export function PagedAppGrid({
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
 
-    if (Math.hypot(dx, dy) > 10 && bgLongPressTimerRef.current !== null) {
-      window.clearTimeout(bgLongPressTimerRef.current);
-      bgLongPressTimerRef.current = null;
+    if (Math.hypot(dx, dy) > 10) {
+      bgMovedRef.current = true;
+      if (bgLongPressTimerRef.current !== null) {
+        window.clearTimeout(bgLongPressTimerRef.current);
+        bgLongPressTimerRef.current = null;
+      }
     }
 
     if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
@@ -232,17 +248,26 @@ export function PagedAppGrid({
     }
   };
 
-  const handleBgPointerUp = () => {
-    clearTimers();
+  const handleBgPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const endedOnIcon = Boolean(
+      (e.target as HTMLElement).closest('[data-has-app="true"]'),
+    );
+    if (bgLongPressTimerRef.current !== null) {
+      window.clearTimeout(bgLongPressTimerRef.current);
+      bgLongPressTimerRef.current = null;
+    }
     if (isSwipingPageRef.current) {
       if (swipeOffsetX < -48 && currentPage < pageCount - 1) {
         onChangePage(currentPage + 1);
       } else if (swipeOffsetX > 48 && currentPage > 0) {
         onChangePage(currentPage - 1);
       }
+    } else if (editMode && !endedOnIcon && !bgMovedRef.current) {
+      onExitEditMode();
     }
     bgSwipeStartRef.current = null;
     isSwipingPageRef.current = false;
+    bgMovedRef.current = false;
     setSwipeOffsetX(0);
   };
 
@@ -322,6 +347,7 @@ export function PagedAppGrid({
                   <div
                     key={globalSlotIdx}
                     data-slot-index={globalSlotIdx}
+                    data-has-app="true"
                     onPointerDown={(e) =>
                       handleIconPointerDown(e, globalSlotIdx)
                     }
