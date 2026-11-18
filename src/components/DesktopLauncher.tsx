@@ -480,19 +480,21 @@ export function DesktopLauncher({
         </nav>
       </div>
 
-      {/* Bottom-Right Floating Launcher Toggle (visible when app window is open) */}
+      {/* Right-Middle Floating Launcher Toggle (avoids bottom-right theme toggles) */}
       {hasVisibleWindow && (
         <button
           type="button"
           onClick={() => setDockPinnedOpen((p) => !p)}
-          className="fixed right-4 bottom-4 z-50 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/25 bg-slate-900/85 text-white shadow-2xl backdrop-blur-xl transition hover:scale-105 hover:bg-slate-800 active:scale-95"
+          className={`fixed top-1/2 z-50 flex h-12 w-10 -translate-y-1/2 items-center justify-center rounded-l-2xl border border-r-0 border-white/25 bg-slate-900/85 text-white shadow-2xl backdrop-blur-xl transition-all hover:bg-slate-800 active:scale-95 ${
+            dockPinnedOpen ? 'right-[76px]' : 'right-0'
+          }`}
           title={dockPinnedOpen ? '런처 Dock 닫기' : '런처 Dock 열기'}
           aria-label="런처 Dock 토글"
         >
           {dockPinnedOpen ? (
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           ) : (
-            <LayoutGrid className="h-5 w-5 text-sky-300" />
+            <LayoutGrid className="h-4 w-4 text-sky-300" />
           )}
         </button>
       )}
