@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Apple SD Gothic Neo", "Pretendard", "Segoe UI", Roboto, sans-serif;
+  }
+}
+
+@keyframes jiggle {
+  0%, 100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+.animate-jiggle {
+  animation: jiggle 0.26s ease-in-out infinite;
+}
+
+@keyframes water-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+.animate-water-ripple {
+  animation: water-ripple 2.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.animate-water-ripple-delay-1 {
+  animation: water-ripple 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s infinite;
+}
+
+.animate-water-ripple-delay-2 {
+  animation: water-ripple 2.2s cubic-bezier(0.16, 1, 0.3, 1) 1.4s infinite;
+}
+
+@keyframes nav-tap-ripple {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.65;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.animate-nav-ripple {
+  animation: nav-tap-ripple 0.42s ease-out forwards;
+}
+
+/* Subtle custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+}

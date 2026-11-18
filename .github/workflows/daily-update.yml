@@ -1,0 +1,39 @@
+name: Daily 04:00 KST Sync & Patch Log
+
+on:
+  schedule:
+    # 19:00 UTC == 04:00 KST (매일 새벽 4시)
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run daily Web-HQ & patch log sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/sync-daily.mjs
+
+      - name: Commit and push updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/web-hq-apps.json public/data/patch-notes.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(sync): daily 04:00 KST Web-HQ & patch log update"
+            git push
+          else
+            echo "No changes to commit."
+          fi

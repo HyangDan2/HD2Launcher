@@ -1,0 +1,156 @@
+{
+  "updatedAt": "2026-11-18T11:11:33.246Z",
+  "apps": [
+    {
+      "id": "webhq-main",
+      "name": "Web-HQ",
+      "subtitle": "hyangdan2.github.io",
+      "category": "web-hq",
+      "iconName": "Globe",
+      "gradient": "from-sky-400 via-blue-500 to-indigo-600",
+      "url": "https://hyangdan2.github.io/"
+    },
+    {
+      "id": "webhq-technical-hub",
+      "name": "Tech Hub",
+      "subtitle": "Technical Hub",
+      "category": "web-hq",
+      "iconName": "Cpu",
+      "gradient": "from-slate-600 via-slate-700 to-zinc-900",
+      "url": "https://hyangdan2.github.io/TechnicalHub/"
+    },
+    {
+      "id": "webhq-diary",
+      "name": "Diary",
+      "subtitle": "개발/일상 기록",
+      "category": "web-hq",
+      "iconName": "BookOpen",
+      "gradient": "from-amber-400 via-orange-500 to-rose-500",
+      "url": "https://hyangdan2.github.io/diary/"
+    },
+    {
+      "id": "app-todo-master",
+      "name": "Todo Master",
+      "subtitle": "Today, in order.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-sky-400 via-blue-500 to-indigo-600",
+      "url": "https://hyangdan2.github.io/AGPilot0002/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/todo-master.jpg"
+    },
+    {
+      "id": "app-photos",
+      "name": "Photos",
+      "subtitle": "A quiet photo library.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-emerald-400 via-teal-500 to-cyan-600",
+      "url": "https://hyangdan2.github.io/PKPilot0001/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/photos.jpg"
+    },
+    {
+      "id": "app-midpoint",
+      "name": "Midpoint",
+      "subtitle": "Fair meeting point finder.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-violet-400 via-purple-500 to-fuchsia-600",
+      "url": "https://hyangdan2.github.io/PKPilot0002/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/midpoint.jpg"
+    },
+    {
+      "id": "app-film-studio",
+      "name": "Film Studio",
+      "subtitle": "Nine films, one browser.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-amber-400 via-orange-500 to-rose-500",
+      "url": "https://hyangdan2.github.io/AGPilot0007/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/film-studio.jpg"
+    },
+    {
+      "id": "app-shutterplate",
+      "name": "Shutterplate",
+      "subtitle": "Your photo, one studio plate.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-pink-400 via-rose-500 to-red-600",
+      "url": "https://hyangdan2.github.io/PKPilot0003/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/shutterplate.jpg"
+    },
+    {
+      "id": "app-dos-player",
+      "name": "DOS Player",
+      "subtitle": "Old DOS games, zero install.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-cyan-400 via-sky-500 to-blue-600",
+      "url": "https://hyangdan2.github.io/PKPilot0006/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/dos-player.jpg"
+    },
+    {
+      "id": "app-markdown-viewer",
+      "name": "Markdown Viewer",
+      "subtitle": "Read it as written.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-indigo-400 via-violet-500 to-purple-600",
+      "url": "https://hyangdan2.github.io/PKPilot0008/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/markdown-viewer.jpg"
+    },
+    {
+      "id": "app-machine-learning-lab",
+      "name": "Machine Learning Lab",
+      "subtitle": "Learn by experiment.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-lime-400 via-emerald-500 to-green-600",
+      "url": "https://hyangdan2.github.io/EDPilot0001/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/machine-learning-lab.jpg"
+    },
+    {
+      "id": "game-valkyrie-eira",
+      "name": "VALKYRIE EIRA",
+      "subtitle": "Skybreak",
+      "category": "game",
+      "iconName": "Gamepad2",
+      "gradient": "from-fuchsia-500 via-purple-600 to-indigo-700",
+      "url": "https://hyangdan2.github.io/AGPilot0001/",
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/valkyrie-eira.webp",
+      "allowZoom": true
+    },
+    {
+      "id": "game-particle-beat",
+      "name": "Particle Beat",
+      "subtitle": "Find your frequency.",
+      "category": "game",
+      "iconName": "Gamepad2",
+      "gradient": "from-rose-500 via-red-600 to-orange-600",
+      "url": "https://hyangdan2.github.io/CDXPilot0004/",
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/particle-beat.webp",
+      "allowZoom": true
+    },
+    {
+      "id": "game-valkyrie",
+      "name": "VALKYRIE",
+      "subtitle": "The Ashen Gate",
+      "category": "game",
+      "iconName": "Gamepad2",
+      "gradient": "from-cyan-500 via-blue-600 to-indigo-700",
+      "url": "https://hyangdan2.github.io/CDXPilot0005/",
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/valkyrie.webp",
+      "allowZoom": true
+    },
+    {
+      "id": "game-chibilink",
+      "name": "ChibiLink",
+      "subtitle": "Momo’s Little Café",
+      "category": "game",
+      "iconName": "Gamepad2",
+      "gradient": "from-emerald-500 via-teal-600 to-cyan-700",
+      "url": "https://hyangdan2.github.io/CDXPilot0006/",
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/chibilink.webp",
+      "allowZoom": true
+    }
+  ]
+}
