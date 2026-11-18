@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AddAppModal } from './components/AddAppModal';
 import { AppListDrawer } from './components/AppListDrawer';
+import { DesktopLauncher } from './components/DesktopLauncher';
 import { LockScreen } from './components/LockScreen';
 import {
   PagedAppGrid,
@@ -70,7 +71,19 @@ function buildInitialSlots(
 
 export function App() {
   const [isLocked, setIsLocked] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(min-width: 768px)').matches
+      : false,
+  );
   const [ssoAuthenticated, setSsoAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   const [adminPagesOpen, setAdminPagesOpen] = useState(false);
   const [adminServices, setAdminServices] = useState<LauncherApp[]>([]);
   const [webHqApps, setWebHqApps] = useState<LauncherApp[]>([]);
@@ -425,9 +438,50 @@ export function App() {
   const activeWallpaper =
     currentPage >= 3 ? ADMIN_WALLPAPER_SRC : homeWallpaper;
 
+  if (isDesktop) {
+    return (
+      <>
+        <DesktopLauncher
+          isLocked={isLocked}
+          onUnlock={() => setIsLocked(false)}
+          onLock={() => setIsLocked(true)}
+          apps={visibleApps}
+          appsById={appsById}
+          slots={displaySlots}
+          pageCount={pageCount}
+          currentPage={currentPage}
+          editMode={editMode}
+          ssoAuthenticated={ssoAuthenticated}
+          adminPagesOpen={adminPagesOpen}
+          onChangePage={setCurrentPage}
+          onEnterEditMode={() => setEditMode(true)}
+          onExitEditMode={() => setEditMode(false)}
+          onMoveSlot={handleMoveSlot}
+          onRemoveCustomApp={(id) => {
+            setCustomApps((prev) => prev.filter((a) => a.id !== id));
+            setSlots((prev) => prev.map((s) => (s === id ? null : s)));
+            setToastMessage('커스텀 서비스가 삭제되었습니다.');
+          }}
+          onOpenAdminGate={handleOpenAdminGate}
+          onOpenAddApp={() => setIsAddAppOpen(true)}
+        />
+        <AddAppModal
+          isOpen={isAddAppOpen}
+          onClose={() => setIsAddAppOpen(false)}
+          onAddApp={handleAddCustomApp}
+        />
+        {toastMessage && (
+          <div className="pointer-events-none fixed top-11 right-4 z-50 rounded-xl border border-white/15 bg-slate-900/90 px-4 py-2 text-xs font-medium text-white shadow-2xl backdrop-blur-xl">
+            {toastMessage}
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
-    <div className="flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-slate-950 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_55%),radial-gradient(circle_at_bottom,_rgba(139,92,246,0.14),_transparent_55%)] sm:p-4">
-      <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-950 text-white sm:h-[860px] sm:max-h-[92vh] sm:w-[430px] sm:rounded-[44px] sm:border sm:border-white/20 sm:shadow-[0_25px_70px_-15px_rgba(0,0,0,0.85)]">
+    <div className="flex h-[100dvh] w-full items-center justify-center overflow-hidden bg-slate-950">
+      <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-950 text-white">
         {isLocked ? (
           <LockScreen
             wallpaperSrc={lockWallpaper}
