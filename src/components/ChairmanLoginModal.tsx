@@ -118,9 +118,6 @@ export function ChairmanLoginModal({
               <h2 className="text-sm font-semibold text-white">
                 Chairman 관리자 로그인
               </h2>
-              <p className="text-[11px] text-slate-400">
-                인증 통과 시 4·5페이지 관리자 메뉴가 열립니다
-              </p>
             </div>
           </div>
 
