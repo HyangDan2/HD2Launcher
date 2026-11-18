@@ -51,6 +51,7 @@ export function PagedAppGrid({
     y: number;
   } | null>(null);
   const isDraggingIconRef = useRef(false);
+  const pointerMovedRef = useRef(false);
   const longPressTriggeredRef = useRef(false);
 
   const bgSwipeStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -79,16 +80,19 @@ export function PagedAppGrid({
     if ((e.target as HTMLElement).closest('button[data-delete-btn="true"]')) {
       return;
     }
-    e.stopPropagation();
     clearTimers();
 
     iconDragStartRef.current = { slotIndex, x: e.clientX, y: e.clientY };
     isDraggingIconRef.current = false;
+    pointerMovedRef.current = false;
     longPressTriggeredRef.current = false;
-    e.currentTarget.setPointerCapture(e.pointerId);
 
-    if (!editMode) {
+    if (editMode) {
+      e.stopPropagation();
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } else {
       longPressTimerRef.current = window.setTimeout(() => {
+        if (pointerMovedRef.current) return;
         longPressTriggeredRef.current = true;
         if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
           navigator.vibrate?.(18);
@@ -104,16 +108,21 @@ export function PagedAppGrid({
 
     const dx = e.clientX - start.x;
     const dy = e.clientY - start.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 8) {
+      pointerMovedRef.current = true;
+    }
 
     if (!editMode) {
-      if (Math.hypot(dx, dy) > 8 && longPressTimerRef.current !== null) {
+      if (dist > 8 && longPressTimerRef.current !== null) {
         window.clearTimeout(longPressTimerRef.current);
         longPressTimerRef.current = null;
       }
       return;
     }
 
-    if (!isDraggingIconRef.current && Math.hypot(dx, dy) > 8) {
+    if (!isDraggingIconRef.current && dist > 8) {
       isDraggingIconRef.current = true;
       setDraggingFromSlot(start.slotIndex);
     }
@@ -169,6 +178,7 @@ export function PagedAppGrid({
       onMoveSlot(start.slotIndex, hoverSlot);
     } else if (
       !isDraggingIconRef.current &&
+      !pointerMovedRef.current &&
       !longPressTriggeredRef.current &&
       !editMode
     ) {
@@ -177,6 +187,7 @@ export function PagedAppGrid({
 
     iconDragStartRef.current = null;
     isDraggingIconRef.current = false;
+    pointerMovedRef.current = false;
     longPressTriggeredRef.current = false;
     setDraggingFromSlot(null);
     setHoverSlot(null);
