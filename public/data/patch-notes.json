@@ -2,10 +2,10 @@
   {
     "id": "sync-2026-11-19",
     "version": "2026.11.19",
-    "date": "2026-11-19 07:23 KST",
+    "date": "2026-11-19 09:52 KST",
     "target": "Web-HQ",
     "title": "04:00 정기 동기화 및 패치 기록",
-    "summary": "최근 24시간 동안 반영된 변경사항 44건을 기록했습니다.",
+    "summary": "최근 24시간 동안 반영된 변경사항 36건을 기록했습니다.",
     "changes": [
       {
         "type": "NEW",
@@ -60,14 +60,6 @@
         "text": "[Web-HQ/ApplicationHub] feat(catalog): register Markdown Viewer (PKPilot0008) (#19)"
       },
       {
-        "type": "NEW",
-        "text": "[Web-HQ/ApplicationHub] feat(nav): one-line drawer list with Diary accordion and hover dropdown (#21)"
-      },
-      {
-        "type": "NEW",
-        "text": "[Web-HQ/ApplicationHub] feat(nav): 3대 허브 공통 내비게이션 — PC 카테고리 탭 + 모바일 ≡ 드로어 (#20)"
-      },
-      {
         "type": "FIX",
         "text": "[Web-HQ/GameHub] fix(build): 추적된 node_modules 심볼릭 링크 제거, .gitignore 보강 (#15)"
       },
@@ -76,16 +68,24 @@
         "text": "[Web-HQ/GameHub] feat(nav): Apps·Play·Diary 아코디언과 PC 드롭다운 통일 (#14)"
       },
       {
+        "type": "FIX",
+        "text": "[Web-HQ/TechnicalHub] fix(build): 추적된 node_modules 심볼릭 링크 제거, .gitignore 보강 (#20)"
+      },
+      {
         "type": "NEW",
-        "text": "[Web-HQ/GameHub] feat(nav): one-line drawer list with Diary accordion and hover dropdown (#13)"
+        "text": "[Web-HQ/TechnicalHub] feat(nav): Apps·Play·Diary 아코디언과 PC 드롭다운으로 통일 (#19)"
       },
       {
         "type": "IMPROVE",
-        "text": "[Web-HQ/GameHub] chore(css): drop the retired .nav-active rule (#12)"
+        "text": "[Web-HQ/diary] chore(diary): 검색 스크립트 캐시 버전 갱신 (?v=20261119-langen) (#15)"
       },
       {
         "type": "NEW",
-        "text": "[Web-HQ/GameHub] feat(nav): shared hub tabs and mobile drawer (#11)"
+        "text": "[Web-HQ/diary] feat(i18n): 영어 글·카테고리의 html lang 분기와 홈·카테고리 크롬 영문화 (#14)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(diary): translate Devlog·Architecture·Troubleshooting posts to English + 3 new posts (#13)"
       }
     ]
   },
