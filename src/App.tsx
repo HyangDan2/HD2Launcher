@@ -86,6 +86,33 @@ export function App() {
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
+
+  // Dynamically allocate viewport height for both mobile browser (Chrome/Safari) and Standalone PWA
+  useEffect(() => {
+    const updateAppHeight = () => {
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        Boolean((navigator as { standalone?: boolean }).standalone);
+      if (isStandalone) {
+        document.documentElement.style.setProperty('--app-height', '100lvh');
+      } else {
+        const h = Math.round(
+          window.visualViewport?.height ?? window.innerHeight,
+        );
+        document.documentElement.style.setProperty('--app-height', `${h}px`);
+      }
+    };
+
+    updateAppHeight();
+    window.addEventListener('resize', updateAppHeight);
+    window.addEventListener('orientationchange', updateAppHeight);
+    window.visualViewport?.addEventListener('resize', updateAppHeight);
+    return () => {
+      window.removeEventListener('resize', updateAppHeight);
+      window.removeEventListener('orientationchange', updateAppHeight);
+      window.visualViewport?.removeEventListener('resize', updateAppHeight);
+    };
+  }, []);
   const [adminPagesOpen, setAdminPagesOpen] = useState(false);
   const [adminServices, setAdminServices] = useState<LauncherApp[]>([]);
   const [webHqApps, setWebHqApps] = useState<LauncherApp[]>([]);
@@ -508,7 +535,10 @@ export function App() {
   }
 
   return (
-    <div className="fixed inset-0 flex h-[100lvh] w-full flex-col overflow-hidden bg-slate-950 text-white">
+    <div
+      style={{ height: 'var(--app-height, 100dvh)' }}
+      className="fixed top-0 right-0 left-0 flex w-full flex-col overflow-hidden bg-slate-950 text-white"
+    >
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-slate-950 text-white">
         {isLocked ? (
           <LockScreen
