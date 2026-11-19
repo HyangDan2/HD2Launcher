@@ -11,7 +11,7 @@ export function UpdateLogView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/data/patch-notes.json', { cache: 'no-store' });
+      const res = await fetch(`${import.meta.env.BASE_URL}data/patch-notes.json`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as PatchNote[];
       setNotes(Array.isArray(data) ? data : []);

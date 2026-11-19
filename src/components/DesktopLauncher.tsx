@@ -17,9 +17,10 @@ import { DesktopWindow, OpenWindowState } from './DesktopWindow';
 import { IconGlyph } from './IconGlyph';
 import { PagedAppGrid } from './PagedAppGrid';
 
-const PC_HOME_WP = '/wallpapers/pc/homescreen.jpg';
-const PC_LOCK_WP = '/wallpapers/pc/lockscreen.jpg';
-const PC_ADMIN_WP = '/wallpapers/pc/admin-bg.png';
+const BASE = import.meta.env.BASE_URL;
+const PC_HOME_WP = `${BASE}wallpapers/pc/homescreen.jpg`;
+const PC_LOCK_WP = `${BASE}wallpapers/pc/lockscreen.jpg`;
+const PC_ADMIN_WP = `${BASE}wallpapers/pc/admin-bg.png`;
 
 interface DesktopLauncherProps {
   isLocked: boolean;

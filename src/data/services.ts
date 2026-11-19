@@ -1,24 +1,26 @@
 import { LauncherApp, WallpaperOption } from '../types/launcher';
 
+const BASE = import.meta.env.BASE_URL;
+
 export const LAUNCHER_WALLPAPERS: WallpaperOption[] = [
   {
     id: 'winter-street',
     label: '눈 내리는 거리',
-    src: '/wallpapers/homescreen.jpg',
+    src: `${BASE}wallpapers/homescreen.jpg`,
   },
   {
     id: 'winter-hands',
     label: '겨울밤 인사',
-    src: '/wallpapers/lockscreen.png',
+    src: `${BASE}wallpapers/lockscreen.png`,
   },
   {
     id: 'hd2lab-dark',
     label: 'HD²LAB Beyond',
-    src: '/wallpapers/admin-bg.png',
+    src: `${BASE}wallpapers/admin-bg.png`,
   },
 ];
 
-export const ADMIN_WALLPAPER_SRC = '/wallpapers/admin-bg.png';
+export const ADMIN_WALLPAPER_SRC = `${BASE}wallpapers/admin-bg.png`;
 
 export const ADMIN_GATE_APP: LauncherApp = {
   id: 'admin-sso-gate',

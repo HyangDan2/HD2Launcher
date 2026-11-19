@@ -26,8 +26,8 @@ import { LauncherApp } from './types/launcher';
 
 const CUSTOM_APPS_KEY = 'hd2_launcher_custom_apps_v2';
 const SLOTS_STORAGE_KEY = 'hd2_launcher_slots_v7';
-const HOME_WP_KEY = 'hd2_launcher_home_wp_v2';
-const LOCK_WP_KEY = 'hd2_launcher_lock_wp_v2';
+const HOME_WP_KEY = 'hd2_launcher_home_wp_v3';
+const LOCK_WP_KEY = 'hd2_launcher_lock_wp_v3';
 
 const ADMIN_GRADIENTS = [
   'from-rose-500 via-red-600 to-orange-700',
@@ -173,7 +173,7 @@ export function App() {
 
   // Load synced Web-HQ apps/games
   useEffect(() => {
-    fetch('/data/web-hq-apps.json', { cache: 'no-store' })
+    fetch(`${import.meta.env.BASE_URL}data/web-hq-apps.json`, { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && Array.isArray(data.apps)) {
