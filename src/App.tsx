@@ -14,6 +14,8 @@ import { PhoneNavBar } from './components/PhoneNavBar';
 import { ServiceViewport } from './components/ServiceViewport';
 import { UpdateLogView } from './components/UpdateLogView';
 import { WallpaperModal } from './components/WallpaperModal';
+import { WidgetHome } from './components/WidgetHome';
+import { mergeServerCatalog, readServerCatalog, readWebCatalog } from './data/catalog';
 import {
   ADMIN_ADD_APP,
   ADMIN_GATE_APP,
@@ -45,25 +47,36 @@ interface AuthServiceRow {
   enabled?: boolean;
 }
 
-function buildInitialSlots(
-  serverApps: LauncherApp[],
-  webHqApps: LauncherApp[],
-): (string | null)[] {
+// Preserve the existing Web-HQ defaults for new devices without auto-pinning future catalog entries.
+const INITIAL_WEB_APP_IDS = [
+  'webhq-main',
+  'webhq-technical-hub',
+  'webhq-diary',
+  'app-todo-master',
+  'app-photos',
+  'app-midpoint',
+  'app-film-studio',
+  'app-shutterplate',
+  'app-dos-player',
+  'app-markdown-viewer',
+  'app-machine-learning-lab',
+  'game-valkyrie-eira',
+  'game-particle-beat',
+  'game-valkyrie',
+  'game-chibilink',
+];
+
+function buildInitialSlots(): (string | null)[] {
   const slots: (string | null)[] = Array(TOTAL_SLOTS).fill(null);
 
   // Page 1 (slots 0..19): Server-HQ from top
-  serverApps.forEach((app, idx) => {
+  DEFAULT_SERVICES.forEach((app, idx) => {
     if (idx < SLOTS_PER_PAGE) {
       slots[idx] = app.id;
     }
   });
 
-  // Page 2 (slots 20..39): Web-HQ from top
-  webHqApps.forEach((app, idx) => {
-    if (idx < SLOTS_PER_PAGE) {
-      slots[SLOTS_PER_PAGE + idx] = app.id;
-    }
-  });
+  INITIAL_WEB_APP_IDS.forEach((id, index) => { slots[SLOTS_PER_PAGE + index] = id; });
 
   // Page 3 (slot 59 = 5행 4열 우하단): Admin SSO gate button
   slots[SLOTS_PER_PAGE * 3 - 1] = ADMIN_GATE_APP.id;
@@ -116,6 +129,8 @@ export function App() {
   const [adminPagesOpen, setAdminPagesOpen] = useState(false);
   const [adminServices, setAdminServices] = useState<LauncherApp[]>([]);
   const [webHqApps, setWebHqApps] = useState<LauncherApp[]>([]);
+  const [serverApps, setServerApps] = useState<LauncherApp[]>([]);
+  const [aiApps, setAiApps] = useState<LauncherApp[]>([]);
 
   const [customApps, setCustomApps] = useState<LauncherApp[]>(() => {
     try {
@@ -198,27 +213,41 @@ export function App() {
       });
   }, [loadSsoAdminServices]);
 
-  // Load synced Web-HQ apps/games
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL}data/web-hq-apps.json`, { cache: 'no-store' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data && Array.isArray(data.apps)) {
-          setWebHqApps(data.apps as LauncherApp[]);
+    let request: AbortController;
+    const refreshCatalogs = () => {
+      request?.abort();
+      const controller = new AbortController();
+      request = controller;
+      const load = async <T,>(url: string, parse: (data: T) => LauncherApp[], apply: (apps: LauncherApp[]) => void) => {
+        try {
+          const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+          if (!response.ok) return;
+          const apps = parse(await response.json());
+          if (!controller.signal.aborted) apply(apps);
+        } catch {
+          // Keep the last successfully loaded catalog.
         }
-      })
-      .catch(() => {
-        // ignore
-      });
+      };
+      void load(import.meta.env.BASE_URL + 'data/web-hq-apps.json', readWebCatalog, setWebHqApps);
+      void load('/api/v1/manifests/service', (data: Parameters<typeof readServerCatalog>[0]) => readServerCatalog(data, 'service'), setServerApps);
+      void load('/api/v1/manifests/ai', (data: Parameters<typeof readServerCatalog>[0]) => readServerCatalog(data, 'ai'), setAiApps);
+    };
+    refreshCatalogs();
+    window.addEventListener('focus', refreshCatalogs);
+    return () => {
+      window.removeEventListener('focus', refreshCatalogs);
+      request?.abort();
+    };
   }, []);
 
   const visibleApps = useMemo(() => {
-    const base = [...DEFAULT_SERVICES, ...webHqApps, ADMIN_GATE_APP, ...customApps];
+    const base = [...mergeServerCatalog(serverApps, aiApps), ...webHqApps, ADMIN_GATE_APP, ...customApps];
     if (ssoAuthenticated && adminPagesOpen) {
       return [...base, ...adminServices];
     }
     return base;
-  }, [webHqApps, customApps, ssoAuthenticated, adminPagesOpen, adminServices]);
+  }, [serverApps, aiApps, webHqApps, customApps, ssoAuthenticated, adminPagesOpen, adminServices]);
 
   const appsById = useMemo(
     () => new Map(visibleApps.map((app) => [app.id, app])),
@@ -237,10 +266,10 @@ export function App() {
     } catch {
       // ignore
     }
-    return buildInitialSlots(DEFAULT_SERVICES, []);
+    return buildInitialSlots();
   });
 
-  // Sync Web-HQ apps onto Page 2 (top-down) & Admin services onto Pages 4-5 (top-down)
+  // Keep the administrator gate and the authenticated administrator pages populated.
   useEffect(() => {
     setSlots((prev) => {
       const next = [...prev];
@@ -266,20 +295,6 @@ export function App() {
         }
       }
 
-      // Page 2 (slots 20..39): Web-HQ apps from top
-      for (const app of webHqApps) {
-        if (!existingIds.has(app.id)) {
-          const p2Empty = next.findIndex(
-            (id, idx) =>
-              idx >= SLOTS_PER_PAGE && idx < SLOTS_PER_PAGE * 2 && id === null,
-          );
-          if (p2Empty !== -1) {
-            next[p2Empty] = app.id;
-            existingIds.add(app.id);
-          }
-        }
-      }
-
       // Pages 4 & 5 (slots 60..99): Admin services sequentially from top
       if (ssoAuthenticated && adminPagesOpen) {
         for (const app of adminServices) {
@@ -297,7 +312,7 @@ export function App() {
 
       return next;
     });
-  }, [webHqApps, ssoAuthenticated, adminPagesOpen, adminServices]);
+  }, [ssoAuthenticated, adminPagesOpen, adminServices]);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [editMode, setEditMode] = useState(false);
@@ -368,6 +383,17 @@ export function App() {
     return () => clearTimeout(t);
   }, [toastMessage]);
 
+  const handleUnlock = () => {
+    setEditMode(false);
+    setCurrentPage(0);
+    setIsLocked(false);
+  };
+
+  const handleChangePage = (page: number) => {
+    if (page === 0) setEditMode(false);
+    setCurrentPage(page);
+  };
+
   const handleMoveSlot = (fromSlot: number, toSlot: number) => {
     setSlots((prev) => {
       const next = [...prev];
@@ -390,8 +416,8 @@ export function App() {
         setSsoAuthenticated(true);
         await loadSsoAdminServices();
         setAdminPagesOpen(true);
-        setCurrentPage(3); // Slide directly to Page 4
-        setToastMessage('SSO 인증 확인 · 관리자 페이지(4~5P)가 열렸습니다.');
+        setCurrentPage(4);
+        setToastMessage('SSO 인증 확인 · 관리자 앱 페이지가 열렸습니다.');
         return;
       }
     } catch {
@@ -440,7 +466,7 @@ export function App() {
       return;
     }
     if (currentPage > 0) {
-      setCurrentPage((p) => p - 1);
+      handleChangePage(currentPage - 1);
     }
   };
 
@@ -461,7 +487,7 @@ export function App() {
     setCustomApps((prev) => [...prev, newApp]);
     setSlots((prev) => {
       const next = [...prev];
-      const pageStart = currentPage * SLOTS_PER_PAGE;
+      const pageStart = Math.max(0, currentPage - 1) * SLOTS_PER_PAGE;
       const localEmpty = next
         .slice(pageStart, pageStart + SLOTS_PER_PAGE)
         .findIndex((s) => s === null);
@@ -476,18 +502,36 @@ export function App() {
     setToastMessage(`"${newApp.name}" 서비스가 추가되었습니다.`);
   };
 
-  const pageCount = ssoAuthenticated && adminPagesOpen ? 5 : 3;
+  const pinnedIds = useMemo(() => new Set(slots.filter((id): id is string => id !== null)), [slots]);
+
+  const handlePinApp = (app: LauncherApp) => {
+    if (pinnedIds.has(app.id) || app.adminOnly) return;
+    const isWeb = app.category === 'web-hq' || app.category === 'game';
+    const first = (isWeb ? 1 : 0) * SLOTS_PER_PAGE;
+    const slot = slots.findIndex((id, i) => id === null && i >= first && i < first + SLOTS_PER_PAGE);
+    const available = slot === -1 ? slots.findIndex((id, i) => id === null && i < 3 * SLOTS_PER_PAGE) : slot;
+    if (available === -1) {
+      setToastMessage('홈에 빈자리가 없습니다.');
+      return;
+    }
+    setSlots((previous) => previous.map((id, index) => index === available ? app.id : id));
+    setToastMessage(`"${app.name}" 앱을 홈에 추가했습니다.`);
+  };
+
+  const pageCount = ssoAuthenticated && adminPagesOpen ? 6 : 4;
   const activeWallpaper =
-    currentPage >= 3 ? ADMIN_WALLPAPER_SRC : homeWallpaper;
+    currentPage >= 4 ? ADMIN_WALLPAPER_SRC : homeWallpaper;
 
   if (isDesktop) {
     return (
       <>
         <DesktopLauncher
           isLocked={isLocked}
-          onUnlock={() => setIsLocked(false)}
+          onUnlock={handleUnlock}
           onLock={() => setIsLocked(true)}
           apps={visibleApps}
+          pinnedIds={pinnedIds}
+          onPinApp={handlePinApp}
           appsById={appsById}
           slots={displaySlots}
           pageCount={pageCount}
@@ -495,7 +539,7 @@ export function App() {
           editMode={editMode}
           ssoAuthenticated={ssoAuthenticated}
           adminPagesOpen={adminPagesOpen}
-          onChangePage={setCurrentPage}
+          onChangePage={handleChangePage}
           onEnterEditMode={() => setEditMode(true)}
           onExitEditMode={() => setEditMode(false)}
           onMoveSlot={handleMoveSlot}
@@ -521,8 +565,8 @@ export function App() {
             setSsoAuthenticated(true);
             await loadSsoAdminServices();
             setAdminPagesOpen(true);
-            setCurrentPage(3);
-            setToastMessage('Chairman 인증 완료 · 관리자 페이지(4~5P)가 열렸습니다.');
+            setCurrentPage(4);
+            setToastMessage('Chairman 인증 완료 · 관리자 앱 페이지가 열렸습니다.');
           }}
         />
         {toastMessage && (
@@ -543,7 +587,7 @@ export function App() {
         {isLocked ? (
           <LockScreen
             wallpaperSrc={lockWallpaper}
-            onUnlock={() => setIsLocked(false)}
+            onUnlock={handleUnlock}
           />
         ) : (
           <>
@@ -565,7 +609,15 @@ export function App() {
                 pageCount={pageCount}
                 currentPage={currentPage}
                 editMode={editMode}
-                onChangePage={setCurrentPage}
+                widgetHome={<WidgetHome
+                  active={currentPage === 0 && !activeApp && !isAppListOpen && !isWallpaperOpen}
+                  onOpenLog={() => {
+                    const log = appsById.get('update-log');
+                    if (log) handleLaunchApp(log);
+                  }}
+                  onOpenApps={() => handleChangePage(1)}
+                />}
+                onChangePage={handleChangePage}
                 onEnterEditMode={() => setEditMode(true)}
                 onExitEditMode={() => setEditMode(false)}
                 onMoveSlot={handleMoveSlot}
@@ -591,6 +643,8 @@ export function App() {
               <AppListDrawer
                 isOpen={isAppListOpen}
                 apps={visibleApps}
+                pinnedIds={pinnedIds}
+                onPinApp={handlePinApp}
                 adminMode={ssoAuthenticated && adminPagesOpen}
                 onClose={() => setIsAppListOpen(false)}
                 onLaunchApp={handleLaunchApp}
@@ -664,8 +718,8 @@ export function App() {
           setSsoAuthenticated(true);
           await loadSsoAdminServices();
           setAdminPagesOpen(true);
-          setCurrentPage(3);
-          setToastMessage('Chairman 인증 완료 · 관리자 페이지(4~5P)가 열렸습니다.');
+          setCurrentPage(4);
+          setToastMessage('Chairman 인증 완료 · 관리자 앱 페이지가 열렸습니다.');
         }}
       />
     </div>

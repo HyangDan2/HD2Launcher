@@ -16,6 +16,7 @@ import { DesktopSpotlight } from './DesktopSpotlight';
 import { DesktopWindow, OpenWindowState } from './DesktopWindow';
 import { IconGlyph } from './IconGlyph';
 import { PagedAppGrid } from './PagedAppGrid';
+import { WidgetHome } from './WidgetHome';
 
 const BASE = import.meta.env.BASE_URL;
 const PC_HOME_WP = `${BASE}wallpapers/pc/homescreen.jpg`;
@@ -27,6 +28,8 @@ interface DesktopLauncherProps {
   onUnlock: () => void;
   onLock: () => void;
   apps: LauncherApp[];
+  pinnedIds: ReadonlySet<string>;
+  onPinApp: (app: LauncherApp) => void;
   appsById: Map<string, LauncherApp>;
   slots: (string | null)[];
   pageCount: number;
@@ -49,6 +52,8 @@ export function DesktopLauncher({
   onUnlock,
   onLock,
   apps,
+  pinnedIds,
+  onPinApp,
   appsById,
   slots,
   pageCount,
@@ -194,18 +199,19 @@ export function DesktopLauncher({
     weekday: 'short',
   });
 
-  const activeWallpaper = currentPage >= 3 ? PC_ADMIN_WP : pcHomeWp;
+  const activeWallpaper = currentPage >= 4 ? PC_ADMIN_WP : pcHomeWp;
   const hasVisibleWindow = windows.some((w) => !w.minimized);
   const showRightDock = !hasVisibleWindow || dockPinnedOpen;
 
   const spaceTabs = [
-    { page: 0, label: '1P Server-HQ' },
-    { page: 1, label: '2P Web-HQ' },
-    { page: 2, label: '3P Admin' },
+    { page: 0, label: '위젯 홈' },
+    { page: 1, label: 'Server-HQ' },
+    { page: 2, label: 'Web-HQ' },
+    { page: 3, label: 'Admin' },
     ...(ssoAuthenticated && adminPagesOpen
       ? [
-          { page: 3, label: '4P Admin 1' },
-          { page: 4, label: '5P Admin 2' },
+          { page: 4, label: 'Admin 1' },
+          { page: 5, label: 'Admin 2' },
         ]
       : []),
   ];
@@ -259,7 +265,7 @@ export function DesktopLauncher({
             className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-slate-200 hover:bg-white/15"
           >
             <Search className="h-3 w-3 text-slate-400" />
-            <span>검색</span>
+            <span>전체 앱</span>
             <kbd className="rounded bg-white/10 px-1 font-mono text-[9px]">
               ⌘K
             </kbd>
@@ -327,7 +333,13 @@ export function DesktopLauncher({
 
           <button
             type="button"
-            onClick={onLock}
+            onClick={() => {
+              setWindows([]);
+              setSpotlightOpen(false);
+              setWpMenuOpen(false);
+              setDockPinnedOpen(false);
+              onLock();
+            }}
             className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] text-slate-200 hover:bg-white/10"
             title="화면 잠금"
           >
@@ -342,7 +354,7 @@ export function DesktopLauncher({
 
       {/* Main Desktop Area (Left-aligned grid + crisp page arrows) */}
       <main className="relative flex flex-1 overflow-hidden">
-        <div className="relative flex h-full w-full max-w-[460px] items-center pl-4 pr-2 pt-2 pb-4">
+        <div className={`relative flex h-full w-full items-center pl-4 pr-2 pt-2 pb-4 ${currentPage === 0 ? "max-w-[660px]" : "max-w-[460px]"}`}>
           <button
             type="button"
             disabled={currentPage === 0}
@@ -360,6 +372,14 @@ export function DesktopLauncher({
               pageCount={pageCount}
               currentPage={currentPage}
               editMode={editMode}
+              widgetHome={<WidgetHome
+                active={currentPage === 0 && !hasVisibleWindow && !spotlightOpen}
+                onOpenLog={() => {
+                  const log = appsById.get('update-log');
+                  if (log) handleLaunchApp(log);
+                }}
+                onOpenApps={() => onChangePage(1)}
+              />}
               onChangePage={onChangePage}
               onEnterEditMode={onEnterEditMode}
               onExitEditMode={onExitEditMode}
@@ -503,6 +523,8 @@ export function DesktopLauncher({
       <DesktopSpotlight
         isOpen={spotlightOpen}
         apps={apps}
+        pinnedIds={pinnedIds}
+        onPinApp={onPinApp}
         onClose={() => setSpotlightOpen(false)}
         onLaunchApp={handleLaunchApp}
       />

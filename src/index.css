@@ -87,3 +87,14 @@
   background: rgba(255, 255, 255, 0.18);
   border-radius: 9999px;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .widget-ticker-entry {
+    animation: widget-ticker-enter 260ms ease-out;
+  }
+
+  @keyframes widget-ticker-enter {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}

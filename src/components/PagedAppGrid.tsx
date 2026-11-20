@@ -1,5 +1,5 @@
 import { Check, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { LauncherApp } from '../types/launcher';
 import { IconGlyph } from './IconGlyph';
 
@@ -13,6 +13,7 @@ interface PagedAppGridProps {
   pageCount: number;
   currentPage: number;
   editMode: boolean;
+  widgetHome: ReactNode;
   onChangePage: (page: number) => void;
   onEnterEditMode: () => void;
   onExitEditMode: () => void;
@@ -28,6 +29,7 @@ export function PagedAppGrid({
   pageCount,
   currentPage,
   editMode,
+  widgetHome,
   onChangePage,
   onEnterEditMode,
   onExitEditMode,
@@ -144,10 +146,10 @@ export function PagedAppGrid({
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
         const relX = e.clientX - rect.left;
-        if (relX < 28 && currentPage > 0) {
+        if (relX < 28 && currentPage > 1) {
           if (edgeFlipTimerRef.current === null) {
             edgeFlipTimerRef.current = window.setTimeout(() => {
-              onChangePage(Math.max(0, currentPage - 1));
+              onChangePage(Math.max(1, currentPage - 1));
               edgeFlipTimerRef.current = null;
             }, 420);
           }
@@ -196,6 +198,7 @@ export function PagedAppGrid({
 
   // --- Background / Empty Slot Swipe & Long-Press ---
   const handleBgPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button, a')) return;
     const startedOnIcon = Boolean(
       (e.target as HTMLElement).closest('[data-has-app="true"]'),
     );
@@ -212,7 +215,7 @@ export function PagedAppGrid({
     bgMovedRef.current = false;
 
     // Only start wallpaper long-press timer when pressing empty space (never on an icon!)
-    if (!editMode && !startedOnIcon) {
+    if (currentPage > 0 && !editMode && !startedOnIcon) {
       bgLongPressTimerRef.current = window.setTimeout(() => {
         if (!isSwipingPageRef.current && !bgMovedRef.current) {
           if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -259,7 +262,7 @@ export function PagedAppGrid({
     if (isSwipingPageRef.current) {
       if (swipeOffsetX < -48 && currentPage < pageCount - 1) {
         onChangePage(currentPage + 1);
-      } else if (swipeOffsetX > 48 && currentPage > 0) {
+      } else if (swipeOffsetX > 48 && currentPage > (editMode ? 1 : 0)) {
         onChangePage(currentPage - 1);
       }
     } else if (editMode && !endedOnIcon && !bgMovedRef.current) {
@@ -278,7 +281,7 @@ export function PagedAppGrid({
       onPointerMove={handleBgPointerMove}
       onPointerUp={handleBgPointerUp}
       onPointerCancel={handleBgPointerUp}
-      className="relative flex min-h-0 w-full flex-1 touch-none flex-col justify-between overflow-hidden select-none"
+      className={`relative flex min-h-0 w-full flex-1 ${currentPage === 0 ? "touch-pan-y" : "touch-none"} flex-col justify-between overflow-hidden select-none`}
     >
       {/* Edit mode floating Done button */}
       {editMode && (
@@ -311,13 +314,15 @@ export function PagedAppGrid({
               : 'none',
         }}
       >
-        {Array.from({ length: pageCount }).map((_, pageIndex) => {
+        <div inert={currentPage !== 0} className="flex h-full w-full shrink-0 flex-col">{widgetHome}</div>
+        {Array.from({ length: pageCount - 1 }).map((_, pageIndex) => {
           const pageStart = pageIndex * SLOTS_PER_PAGE;
           const pageSlots = slots.slice(pageStart, pageStart + SLOTS_PER_PAGE);
 
           return (
             <div
               key={pageIndex}
+              inert={currentPage !== pageIndex + 1}
               className="grid h-full w-full shrink-0 grid-cols-4 grid-rows-5 gap-x-2 gap-y-1.5 px-4"
             >
               {pageSlots.map((appId, localIdx) => {
@@ -360,7 +365,7 @@ export function PagedAppGrid({
                       setDraggingFromSlot(null);
                       setHoverSlot(null);
                     }}
-                    className={`relative flex cursor-pointer touch-none flex-col items-center justify-center rounded-2xl transition-transform duration-150 ${
+                    className={`relative flex cursor-pointer touch-pan-y flex-col items-center justify-center rounded-2xl transition-transform duration-150 ${
                       editMode ? 'animate-jiggle' : ''
                     } ${isDragging ? 'scale-110 opacity-55' : ''} ${
                       isHoverTarget
@@ -431,7 +436,8 @@ export function PagedAppGrid({
               e.stopPropagation();
               onChangePage(idx);
             }}
-            aria-label={`${idx + 1}페이지로 이동`}
+            aria-label={idx === 0 ? "위젯 홈으로 이동" : `${idx}번째 앱 페이지로 이동`}
+            aria-current={currentPage === idx ? "page" : undefined}
             className={`h-2 rounded-full transition-all ${
               currentPage === idx
                 ? 'w-5 bg-white shadow'
