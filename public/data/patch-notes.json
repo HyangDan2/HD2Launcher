@@ -1,5 +1,95 @@
 [
   {
+    "id": "sync-2026-11-20",
+    "version": "2026.11.20",
+    "date": "2026-11-20 09:58 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 27건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(nav): add US Markets under Info on the portal and About (#88)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/HyangDan2.github.io] fix(about): 허브 5개 기준으로 About 카드·문구·메타 설명 갱신 (#87)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(nav): 상단 내비·모바일 드로어에 Info 아코디언, 허브 그리드에 InformationHub 카드 추가 (#86)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/HyangDan2.github.io] fix(nav): 내비 화살표를 데스크톱·모바일 모두 동일한 V자 셰브런 SVG로 통일 (#85)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(nav): Apps 메뉴 `Markdown Viewer` → `HD2Markdown Viewer` (Web-HQ·about) (#84)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(nav): add US Markets under Info in the dropdown and drawer (#27)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(nav): 상단 내비·모바일 드로어에 Info 아코디언 추가 (#26)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/ApplicationHub] fix(nav): 내비 화살표를 데스크톱·모바일 모두 동일한 V자 셰브런 SVG로 통일 (#25)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/ApplicationHub] fix(catalog): rename Markdown Viewer card to HD2Markdown Viewer (#24)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(nav): add US Markets under Info in the dropdown and drawer (#19)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(nav): 상단 내비·모바일 드로어에 Info 아코디언 추가 (#18)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/GameHub] fix(nav): 내비 화살표를 데스크톱·모바일 모두 동일한 V자 셰브런 SVG로 통일 (#17)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/GameHub] chore(nav): Apps 메뉴 `Markdown Viewer` → `HD2Markdown Viewer` (#16)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(nav): add US Markets under Info on the top page and every profile (#24)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(nav): 상단 내비·모바일 드로어에 Info 아코디언 추가 (#23)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/TechnicalHub] fix(nav): 내비 화살표를 데스크톱·모바일 모두 동일한 V자 셰브런 SVG로 통일 (#22)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/TechnicalHub] chore(nav): Apps 메뉴 `Markdown Viewer` → `HD2Markdown Viewer` (#21)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(nav): add US Markets under Info in the dropdown and drawer (#21)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(en): 영문 Notes 5편 다이어그램 19장 영문 라벨판으로 교체 (#20)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(i18n): Notes KO/EN editions with a KO|EN switch (#19)"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-19",
     "version": "2026.11.19",
     "date": "2026-11-19 09:52 KST",

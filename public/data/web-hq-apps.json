@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-19T00:52:44.842Z",
+  "updatedAt": "2026-11-20T00:58:51.227Z",
   "apps": [
     {
       "id": "webhq-main",
@@ -90,7 +90,7 @@
     },
     {
       "id": "app-markdown-viewer",
-      "name": "Markdown Viewer",
+      "name": "HD2Markdown Viewer",
       "subtitle": "Read it as written.",
       "category": "web-hq",
       "iconName": "AppWindow",
