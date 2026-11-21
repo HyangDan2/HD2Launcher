@@ -1,5 +1,75 @@
 [
   {
+    "id": "sync-2026-11-21",
+    "version": "2026.11.21",
+    "date": "2026-11-21 09:32 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 15건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(about): About 아트워크 로고를 새 HD²LAB 이미지로 재교체 (#92)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(footer): Today · Total 방문자 배지 추가 (#91)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(about): About 아트워크 로고를 HD²LAB Beyond Dimensions 신규 이미지로 교체 (#90)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(analytics): GoatCounter 방문자 추적을 전 페이지 head에 추가 (#89)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(footer): Today · Total 방문자 배지 추가 (#30)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(catalog): add Vektra Vár (PKPilot0012) (#29)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(analytics): GoatCounter 방문자 추적을 빌드 head에 추가 (#28)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(footer): Today · Total 방문자 배지 추가 (#21)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(analytics): GoatCounter 방문자 추적을 페이지 head에 추가 (#20)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(footer): Today · Total 방문자 배지 추가 (#26)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(analytics): GoatCounter 방문자 추적을 허브 head에 추가 (#25)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(footer): Today · Total 방문자 배지 추가 (#24)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/diary] fix(notes): 제목 다듬고 모바일 표 가로 스크롤 처리 (#23)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(notes): 웹 UI·CSS·레이아웃 완전 정리편(KO·EN) + 도식 12장, GoatCounter 연동 (#22)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Launcher/HD2Launcher] feat: add launcher widget home and dynamic app catalog"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-20",
     "version": "2026.11.20",
     "date": "2026-11-20 09:58 KST",

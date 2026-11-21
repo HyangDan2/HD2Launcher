@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-20T00:58:51.227Z",
+  "updatedAt": "2026-11-21T00:32:24.652Z",
   "apps": [
     {
       "id": "webhq-main",
@@ -107,6 +107,16 @@
       "gradient": "from-lime-400 via-emerald-500 to-green-600",
       "url": "https://hyangdan2.github.io/EDPilot0001/",
       "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/machine-learning-lab.jpg"
+    },
+    {
+      "id": "app-vektra-var",
+      "name": "Vektra Vár",
+      "subtitle": "Objects, seen on your device.",
+      "category": "web-hq",
+      "iconName": "AppWindow",
+      "gradient": "from-sky-400 via-blue-500 to-indigo-600",
+      "url": "https://hyangdan2.github.io/PKPilot0012/",
+      "thumbnailUrl": "https://hyangdan2.github.io/ApplicationHub/assets/apps/vektra-var.jpg"
     },
     {
       "id": "game-valkyrie-eira",
