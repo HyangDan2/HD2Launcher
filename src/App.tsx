@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AddAppModal } from './components/AddAppModal';
 import { AdminServicesView } from './components/AdminServicesView';
 import { AppListDrawer } from './components/AppListDrawer';
@@ -11,7 +11,7 @@ import {
   TOTAL_SLOTS,
 } from './components/PagedAppGrid';
 import { PhoneNavBar } from './components/PhoneNavBar';
-import { ServiceViewport } from './components/ServiceViewport';
+import { ServiceViewport, type ServiceViewportHandle } from './components/ServiceViewport';
 import { UpdateLogView } from './components/UpdateLogView';
 import { WallpaperModal } from './components/WallpaperModal';
 import { WidgetHome } from './components/WidgetHome';
@@ -317,6 +317,7 @@ export function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [activeApp, setActiveApp] = useState<LauncherApp | null>(null);
+  const serviceViewportRef = useRef<ServiceViewportHandle>(null);
   const [isAppListOpen, setIsAppListOpen] = useState(false);
   const [isWallpaperOpen, setIsWallpaperOpen] = useState(false);
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
@@ -458,6 +459,7 @@ export function App() {
       return;
     }
     if (activeApp) {
+      if (serviceViewportRef.current?.goBack()) return;
       setActiveApp(null);
       return;
     }
@@ -636,7 +638,7 @@ export function App() {
               ) : activeApp?.internalView === 'admin-services' ? (
                 <AdminServicesView onServicesUpdated={loadSsoAdminServices} />
               ) : (
-                activeApp && <ServiceViewport app={activeApp} />
+                activeApp && <ServiceViewport key={activeApp.id} app={activeApp} ref={serviceViewportRef} />
               )}
 
               {/* App List Drawer */}
