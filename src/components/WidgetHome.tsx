@@ -20,6 +20,26 @@ export function WidgetHome({ active, onOpenLog, onOpenApps }: {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [loading, setLoading] = useState(true);
+  const [gram, setGram] = useState<{ caption: string; image: string; alt: string } | null>(null);
+  const [gramStatus, setGramStatus] = useState<'loading' | 'empty' | 'error' | 'ready'>('loading');
+
+  useEffect(() => {
+    if (!active) return;
+    const controller = new AbortController();
+    setGram(null);
+    setGramStatus('loading');
+    fetch('/gram/api/feed?account=hyangdan2&limit=1', { cache: 'no-store', signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('GRAM unavailable');
+        const data = await response.json();
+        const post = Array.isArray(data.items) ? data.items[0] : null;
+        if (!post?.media?.[0]?.thumbUrl) { setGram(null); setGramStatus('empty'); return; }
+        setGram({ caption: String(post.caption || ''), image: String(post.media[0].thumbUrl), alt: String(post.media[0].alt || '') });
+        setGramStatus('ready');
+      })
+      .catch(() => { if (!controller.signal.aborted) { setGram(null); setGramStatus('error'); } });
+    return () => controller.abort();
+  }, [active]);
 
   useEffect(() => {
     if (!active) return;
@@ -71,14 +91,14 @@ export function WidgetHome({ active, onOpenLog, onOpenApps }: {
           </div>
         </section>
 
-        <section className={tile}>
+        <a href="/gram/" className={tile + ' block focus-visible:outline-2 focus-visible:outline-violet-300'}>
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
             <h2 className={heading}><Instagram className="size-4 shrink-0 text-violet-300" aria-hidden />향단이 인스타</h2>
-            <span className={pending}>준비 중</span>
+            <span className={pending}>피드 보기 ↗</span>
           </div>
-          <img src={winter} alt="" className="mt-2 h-20 w-full rounded-lg object-cover sm:h-24" draggable={false} />
-          <p className="mt-2 text-xs text-slate-200">눈 내리는 산책길</p>
-        </section>
+          {gram && <img src={gram.image} alt={gram.alt} className="mt-2 h-20 w-full rounded-lg object-cover sm:h-24" draggable={false} />}
+          <p className="mt-2 line-clamp-2 text-xs text-slate-200">{gramStatus === 'loading' ? '불러오는 중…' : gramStatus === 'error' ? '피드를 불러올 수 없습니다.' : gramStatus === 'empty' ? '아직 게시물이 없습니다.' : gram?.caption || '향단이의 새 게시물'}</p>
+        </a>
 
         <section className={tile}>
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
