@@ -1,5 +1,95 @@
 [
   {
+    "id": "sync-2026-11-22",
+    "version": "2026.11.22",
+    "date": "2026-11-22 08:39 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 26건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(og): ApplicationHub count 10 → 11 in the Web-HQ share card (#96)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(nav): drop Todo Master, Photos, Hlýja Hljóm and Slinga from the Apps menu (15 → 11) (#95)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(nav): list all 15 apps and scroll a long section in a five-row window (#94)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(og): Web-HQ 공유 카드를 HD2's Diary 스타일로 통일 (#93)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/ApplicationHub] docs(qa): record the hosted acceptance for the 11-app social card (#38)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(og): re-render the share card for the 11-app catalog (#37)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/ApplicationHub] docs(qa): record the hosted acceptance for the four retired apps (11 published) (#36)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/ApplicationHub] chore(catalog): retire Todo Master, Photos, Hlýja Hljóm and Slinga (15 → 11) (#35)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(catalog): add Nordlys, Sága Glitra, Mynda Ljósa and Slinga; scroll the 15-app menu (#34)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(catalog): add Hlýja Hljóm (PKPilot0016) (#33)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(og): unify the share card with the HD2's Diary card style (#32)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(catalog): add Vísna Sól (PKPilot0013) (#31)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/GameHub] chore(nav): drop Todo Master, Photos, Hlýja Hljóm and Slinga from the Apps menu (15 → 11) (#24)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(nav): list all 15 apps, scroll a long section, fold one accordion at a time (#23)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(og): unify the share card with the HD2's Diary card style (#22)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/TechnicalHub] chore(nav): drop Todo Master, Photos, Hlýja Hljóm and Slinga from the Apps menu (15 → 11) (#29)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(nav): list all 15 apps, scroll a long section, fold one accordion at a time (#28)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(og): unify the share card with the HD2's Diary card style (#27)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/diary] chore(nav): drop Todo Master, Photos, Hlýja Hljóm and Slinga from the Apps menu (15 → 11) (#27)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(nav): list all 15 apps, scroll a long section, fold one accordion at a time (#26)"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-21",
     "version": "2026.11.21",
     "date": "2026-11-21 09:32 KST",
