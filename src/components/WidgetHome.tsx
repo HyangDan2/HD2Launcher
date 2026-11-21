@@ -1,5 +1,6 @@
-import { Activity, ChevronDown, ChevronRight, Images, Music2, Pause, Play } from 'lucide-react';
+import { Activity, ChevronDown, ChevronRight, Images, Pause, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { MusicWidget } from './MusicPlayer';
 import type { PatchChange, PatchNote } from '../types/launcher';
 
 const BASE = import.meta.env.BASE_URL;
@@ -112,16 +113,8 @@ export function WidgetHome({ active, onOpenLog, onOpenApps }: {
           </div>
         </section>
 
-        <section className={tile + ' col-span-2'}>
-          <div className="flex items-center justify-between gap-2">
-            <h2 className={heading}><Music2 className="size-4 shrink-0 text-violet-300" aria-hidden />음악 플레이어</h2>
-            <span className={pending}>준비 중</span>
-          </div>
-          <div className="mt-2 flex items-center gap-2.5">
-            <img src={winter} alt="" className="size-9 rounded-md object-cover object-left" draggable={false} />
-            <div className="min-w-0 text-xs"><p className="truncate font-semibold">Winter Footsteps</p><p className="text-slate-300">향단이 · 샘플 트랙</p></div>
-            <button type="button" disabled aria-label="음악 재생 준비 중" className={control + ' ml-auto opacity-50'}><Play className="size-4" /></button>
-          </div>
+        <section className={tile + ' col-span-2'} aria-label="음악 플레이어">
+          <MusicWidget />
         </section>
       </div>
       <button type="button" onClick={onOpenApps} className={control + ' ml-auto mt-2 shrink-0 bg-slate-950/80'}>앱 페이지 <ChevronRight className="size-4" /></button>

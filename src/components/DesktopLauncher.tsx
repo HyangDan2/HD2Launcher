@@ -16,6 +16,7 @@ import { DesktopSpotlight } from './DesktopSpotlight';
 import { DesktopWindow, OpenWindowState } from './DesktopWindow';
 import { IconGlyph } from './IconGlyph';
 import { PagedAppGrid } from './PagedAppGrid';
+import { isMusicApp, useMusicLauncher } from './MusicPlayer';
 import { WidgetHome } from './WidgetHome';
 
 const BASE = import.meta.env.BASE_URL;
@@ -70,6 +71,7 @@ export function DesktopLauncher({
   onOpenAddApp,
   onServicesUpdated,
 }: DesktopLauncherProps) {
+  const music = useMusicLauncher();
   const [now, setNow] = useState(() => new Date());
   const [windows, setWindows] = useState<OpenWindowState[]>([]);
   const [topZ, setTopZ] = useState(30);
@@ -107,6 +109,9 @@ export function DesktopLauncher({
   }, [isLocked, spotlightOpen, currentPage, pageCount, onChangePage]);
 
   const handleLaunchApp = (app: LauncherApp) => {
+    setSpotlightOpen(false);
+    if (isMusicApp(app.url)) { music.open(); return; }
+    music.stop();
     if (app.internalView === 'admin-sso') {
       onOpenAdminGate();
       return;
@@ -409,6 +414,7 @@ export function DesktopLauncher({
             key={win.app.id}
             win={win}
             onFocus={() => {
+              music.stop();
               const nextZ = topZ + 1;
               setTopZ(nextZ);
               setWindows((prev) =>

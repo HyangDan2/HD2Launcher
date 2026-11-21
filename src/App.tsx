@@ -4,6 +4,7 @@ import { AdminServicesView } from './components/AdminServicesView';
 import { AppListDrawer } from './components/AppListDrawer';
 import { ChairmanLoginModal } from './components/ChairmanLoginModal';
 import { DesktopLauncher } from './components/DesktopLauncher';
+import { isMusicApp, MusicPlayerProvider, useMusicLauncher } from './components/MusicPlayer';
 import { LockScreen } from './components/LockScreen';
 import {
   PagedAppGrid,
@@ -84,7 +85,8 @@ function buildInitialSlots(): (string | null)[] {
   return slots;
 }
 
-export function App() {
+function Launcher() {
+  const music = useMusicLauncher();
   const [isLocked, setIsLocked] = useState(true);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== 'undefined'
@@ -432,6 +434,12 @@ export function App() {
   const handleLaunchApp = (app: LauncherApp) => {
     setIsAppListOpen(false);
     setIsWallpaperOpen(false);
+    if (isMusicApp(app.url)) {
+      setActiveApp(null);
+      music.open();
+      return;
+    }
+    music.stop();
 
     if (app.internalView === 'admin-sso') {
       handleOpenAdminGate();
@@ -471,6 +479,7 @@ export function App() {
       handleChangePage(currentPage - 1);
       return;
     }
+    music.stop();
     setIsLocked(true);
   };
 
@@ -532,7 +541,7 @@ export function App() {
         <DesktopLauncher
           isLocked={isLocked}
           onUnlock={handleUnlock}
-          onLock={() => setIsLocked(true)}
+          onLock={() => { music.stop(); setIsLocked(true); }}
           apps={visibleApps}
           pinnedIds={pinnedIds}
           onPinApp={handlePinApp}
@@ -655,6 +664,7 @@ export function App() {
                 onOpenAddApp={() => setIsAddAppOpen(true)}
                 onOpenWallpaperPicker={() => setIsWallpaperOpen(true)}
                 onLockScreen={() => {
+                  music.stop();
                   setActiveApp(null);
                   setIsAppListOpen(false);
                   setIsWallpaperOpen(false);
@@ -721,6 +731,10 @@ export function App() {
       />
     </div>
   );
+}
+
+export function App() {
+  return <MusicPlayerProvider><Launcher /></MusicPlayerProvider>;
 }
 
 export default App;
