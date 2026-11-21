@@ -1,4 +1,4 @@
-import { Activity, ChevronDown, ChevronRight, Images, Instagram, Music2, Pause, Play } from 'lucide-react';
+import { Activity, ChevronDown, ChevronRight, Images, Music2, Pause, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { PatchChange, PatchNote } from '../types/launcher';
 
@@ -93,7 +93,7 @@ export function WidgetHome({ active, onOpenLog, onOpenApps }: {
 
         <a href="/gram/" className={tile + ' block focus-visible:outline-2 focus-visible:outline-violet-300'}>
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-            <h2 className={heading}><Instagram className="size-4 shrink-0 text-violet-300" aria-hidden />향단이 인스타</h2>
+            <h2 className={heading}><img src="/gram/moments.png" alt="" className="size-5 shrink-0" />향단이의 Moments</h2>
             <span className={pending}>피드 보기 ↗</span>
           </div>
           {gram && <img src={gram.image} alt={gram.alt} className="mt-2 h-20 w-full rounded-lg object-cover sm:h-24" draggable={false} />}
