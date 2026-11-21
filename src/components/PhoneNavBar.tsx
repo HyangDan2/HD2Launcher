@@ -2,7 +2,6 @@ import { ChevronLeft, Circle, LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 
 interface PhoneNavBarProps {
-  canGoBack: boolean;
   isAppListOpen: boolean;
   onBack: () => void;
   onHome: () => void;
@@ -12,7 +11,6 @@ interface PhoneNavBarProps {
 type NavButtonId = 'back' | 'home' | 'list';
 
 export function PhoneNavBar({
-  canGoBack,
   isAppListOpen,
   onBack,
   onHome,
@@ -42,11 +40,7 @@ export function PhoneNavBar({
         onClick={() => triggerFeedback('back', onBack)}
         aria-label="뒤로가기"
         title="뒤로가기"
-        className={`relative flex h-11 w-16 items-center justify-center overflow-hidden rounded-2xl transition active:scale-90 ${
-          canGoBack
-            ? 'text-white hover:bg-white/10'
-            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
-        }`}
+        className="relative flex h-11 w-16 items-center justify-center overflow-hidden rounded-2xl text-white transition hover:bg-white/10 active:scale-90"
       >
         {rippleKey?.id === 'back' && (
           <span

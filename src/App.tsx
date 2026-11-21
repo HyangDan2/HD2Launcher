@@ -469,7 +469,9 @@ export function App() {
     }
     if (currentPage > 0) {
       handleChangePage(currentPage - 1);
+      return;
     }
+    setIsLocked(true);
   };
 
   const handleNavHome = () => {
@@ -679,13 +681,6 @@ export function App() {
 
             {/* Persistent Bottom Navigation Bar */}
             <PhoneNavBar
-              canGoBack={Boolean(
-                activeApp ||
-                  isAppListOpen ||
-                  isWallpaperOpen ||
-                  editMode ||
-                  currentPage > 0,
-              )}
               isAppListOpen={isAppListOpen}
               onBack={handleNavBack}
               onHome={handleNavHome}
