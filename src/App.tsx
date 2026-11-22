@@ -6,17 +6,14 @@ import { ChairmanLoginModal } from './components/ChairmanLoginModal';
 import { DesktopLauncher } from './components/DesktopLauncher';
 import { isMusicApp, MusicPlayerProvider, MusicPlayerSurface, useMusicLauncher } from './components/MusicPlayer';
 import { LockScreen } from './components/LockScreen';
-import {
-  PagedAppGrid,
-  SLOTS_PER_PAGE,
-  TOTAL_SLOTS,
-} from './components/PagedAppGrid';
+import { PagedAppGrid } from './components/PagedAppGrid';
 import { PhoneNavBar } from './components/PhoneNavBar';
 import { ServiceViewport, type ServiceViewportHandle } from './components/ServiceViewport';
 import { UpdateLogView } from './components/UpdateLogView';
 import { WallpaperModal } from './components/WallpaperModal';
 import { WidgetHome } from './components/WidgetHome';
 import { mergeServerCatalog, readServerCatalog, readWebCatalog } from './data/catalog';
+import { ADMIN_START, SLOTS_PER_PAGE, TOTAL_SLOTS, getPageStarts, isAdminPage, placeWebApps } from './data/layout';
 import {
   ADMIN_ADD_APP,
   ADMIN_GATE_APP,
@@ -49,7 +46,7 @@ interface AuthServiceRow {
   enabled?: boolean;
 }
 
-// Preserve the existing Web-HQ defaults for new devices without auto-pinning future catalog entries.
+// Seed the original Web-HQ layout before the catalog arrives.
 const INITIAL_WEB_APP_IDS = [
   'webhq-main',
   'webhq-technical-hub',
@@ -103,18 +100,27 @@ function Launcher() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  // Both browser tabs and installed launchers fit the currently visible viewport.
   useEffect(() => {
+    const root = document.documentElement;
+    const displayMode = window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)');
     const updateAppHeight = () => {
+      const installed = displayMode.matches || Boolean((navigator as { standalone?: boolean }).standalone);
+      if (installed) {
+        // iOS home-screen mode needs the large viewport, not visualViewport.height.
+        root.style.setProperty('--app-height', '100lvh');
+        return;
+      }
       const height = window.visualViewport?.height ?? window.innerHeight;
-      if (height > 0) document.documentElement.style.setProperty('--app-height', `${Math.floor(height)}px`);
+      if (height > 0) root.style.setProperty('--app-height', `${Math.floor(height)}px`);
     };
 
     updateAppHeight();
+    displayMode.addEventListener('change', updateAppHeight);
     window.addEventListener('resize', updateAppHeight);
     window.addEventListener('orientationchange', updateAppHeight);
     window.visualViewport?.addEventListener('resize', updateAppHeight);
     return () => {
+      displayMode.removeEventListener('change', updateAppHeight);
       window.removeEventListener('resize', updateAppHeight);
       window.removeEventListener('orientationchange', updateAppHeight);
       window.visualViewport?.removeEventListener('resize', updateAppHeight);
@@ -207,33 +213,39 @@ function Launcher() {
       });
   }, [loadSsoAdminServices]);
 
+  const catalogRequest = useRef<AbortController>(null);
+  const refreshCatalogs = useCallback(() => {
+    catalogRequest.current?.abort();
+    const controller = new AbortController();
+    catalogRequest.current = controller;
+    const load = async <T,>(url: string, parse: (data: T) => LauncherApp[], apply: (apps: LauncherApp[]) => void) => {
+      try {
+        const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) return;
+        const apps = parse(await response.json());
+        if (!controller.signal.aborted) apply(apps);
+      } catch {
+        // Keep the last successfully loaded catalog.
+      }
+    };
+    void load(import.meta.env.BASE_URL + 'data/web-hq-apps.json', readWebCatalog, setWebHqApps);
+    void load('/api/v1/manifests/service', (data: Parameters<typeof readServerCatalog>[0]) => readServerCatalog(data, 'service'), setServerApps);
+    void load('/api/v1/manifests/ai', (data: Parameters<typeof readServerCatalog>[0]) => readServerCatalog(data, 'ai'), setAiApps);
+  }, []);
+
   useEffect(() => {
-    let request: AbortController;
-    const refreshCatalogs = () => {
-      request?.abort();
-      const controller = new AbortController();
-      request = controller;
-      const load = async <T,>(url: string, parse: (data: T) => LauncherApp[], apply: (apps: LauncherApp[]) => void) => {
-        try {
-          const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
-          if (!response.ok) return;
-          const apps = parse(await response.json());
-          if (!controller.signal.aborted) apply(apps);
-        } catch {
-          // Keep the last successfully loaded catalog.
-        }
-      };
-      void load(import.meta.env.BASE_URL + 'data/web-hq-apps.json', readWebCatalog, setWebHqApps);
-      void load('/api/v1/manifests/service', (data: Parameters<typeof readServerCatalog>[0]) => readServerCatalog(data, 'service'), setServerApps);
-      void load('/api/v1/manifests/ai', (data: Parameters<typeof readServerCatalog>[0]) => readServerCatalog(data, 'ai'), setAiApps);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refreshCatalogs();
     };
     refreshCatalogs();
     window.addEventListener('focus', refreshCatalogs);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
     return () => {
       window.removeEventListener('focus', refreshCatalogs);
-      request?.abort();
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+      catalogRequest.current?.abort();
     };
-  }, []);
+  }, [refreshCatalogs]);
 
   const visibleApps = useMemo(() => {
     const base = [...mergeServerCatalog(serverApps, aiApps), ...webHqApps, ADMIN_GATE_APP, ...customApps];
@@ -253,7 +265,7 @@ function Launcher() {
       const raw = localStorage.getItem(SLOTS_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as (string | null)[];
-        if (Array.isArray(parsed) && parsed.length === TOTAL_SLOTS) {
+        if (Array.isArray(parsed) && parsed.length >= TOTAL_SLOTS && parsed.length % SLOTS_PER_PAGE === 0) {
           return parsed;
         }
       }
@@ -262,6 +274,10 @@ function Launcher() {
     }
     return buildInitialSlots();
   });
+
+  useEffect(() => {
+    setSlots((previous) => placeWebApps(previous, webHqApps.map((app) => app.id)));
+  }, [webHqApps]);
 
   // Keep the administrator gate and the authenticated administrator pages populated.
   useEffect(() => {
@@ -294,7 +310,7 @@ function Launcher() {
         for (const app of adminServices) {
           if (!existingIds.has(app.id)) {
             const p45Empty = next.findIndex(
-              (id, idx) => idx >= SLOTS_PER_PAGE * 3 && id === null,
+              (id, idx) => idx >= ADMIN_START && idx < TOTAL_SLOTS && id === null,
             );
             if (p45Empty !== -1) {
               next[p45Empty] = app.id;
@@ -308,7 +324,12 @@ function Launcher() {
     });
   }, [ssoAuthenticated, adminPagesOpen, adminServices]);
 
-  const [currentPage, setCurrentPage] = useState(0);
+  const pageStarts = useMemo(
+    () => getPageStarts(slots.length, ssoAuthenticated && adminPagesOpen),
+    [slots.length, ssoAuthenticated, adminPagesOpen],
+  );
+  const [currentPageStart, setCurrentPageStart] = useState<number | null>(null);
+  const currentPage = currentPageStart === null ? 0 : pageStarts.indexOf(currentPageStart) + 1;
   const [editMode, setEditMode] = useState(false);
   const [activeApp, setActiveApp] = useState<LauncherApp | null>(null);
   const serviceViewportRef = useRef<ServiceViewportHandle>(null);
@@ -380,13 +401,13 @@ function Launcher() {
 
   const handleUnlock = () => {
     setEditMode(false);
-    setCurrentPage(0);
+    setCurrentPageStart(null);
     setIsLocked(false);
   };
 
   const handleChangePage = (page: number) => {
     if (page === 0) setEditMode(false);
-    setCurrentPage(page);
+    setCurrentPageStart(page === 0 ? null : pageStarts[page - 1] ?? null);
   };
 
   const handleMoveSlot = (fromSlot: number, toSlot: number) => {
@@ -411,7 +432,7 @@ function Launcher() {
         setSsoAuthenticated(true);
         await loadSsoAdminServices();
         setAdminPagesOpen(true);
-        setCurrentPage(4);
+        setCurrentPageStart(ADMIN_START);
         setToastMessage('SSO 인증 확인 · 관리자 앱 페이지가 열렸습니다.');
         return;
       }
@@ -485,7 +506,7 @@ function Launcher() {
     setIsAppListOpen(false);
     setActiveApp(null);
     setEditMode(false);
-    setCurrentPage(0);
+    setCurrentPageStart(null);
   };
 
   const displaySlots = useMemo(
@@ -497,14 +518,14 @@ function Launcher() {
     setCustomApps((prev) => [...prev, newApp]);
     setSlots((prev) => {
       const next = [...prev];
-      const pageStart = Math.max(0, currentPage - 1) * SLOTS_PER_PAGE;
+      const pageStart = currentPageStart ?? 0;
       const localEmpty = next
         .slice(pageStart, pageStart + SLOTS_PER_PAGE)
         .findIndex((s) => s === null);
       if (localEmpty !== -1) {
         next[pageStart + localEmpty] = newApp.id;
       } else {
-        const globalEmpty = next.findIndex((s) => s === null);
+        const globalEmpty = next.findIndex((s, index) => index < TOTAL_SLOTS && s === null);
         if (globalEmpty !== -1) next[globalEmpty] = newApp.id;
       }
       return next;
@@ -528,9 +549,7 @@ function Launcher() {
     setToastMessage(`"${app.name}" 앱을 홈에 추가했습니다.`);
   };
 
-  const pageCount = ssoAuthenticated && adminPagesOpen ? 6 : 4;
-  const activeWallpaper =
-    currentPage >= 4 ? ADMIN_WALLPAPER_SRC : homeWallpaper;
+  const activeWallpaper = isAdminPage(currentPageStart) ? ADMIN_WALLPAPER_SRC : homeWallpaper;
 
   if (isDesktop) {
     return (
@@ -542,13 +561,12 @@ function Launcher() {
           apps={visibleApps}
           pinnedIds={pinnedIds}
           onPinApp={handlePinApp}
+          onOpenCatalog={refreshCatalogs}
           appsById={appsById}
           slots={displaySlots}
-          pageCount={pageCount}
+          pageStarts={pageStarts}
           currentPage={currentPage}
           editMode={editMode}
-          ssoAuthenticated={ssoAuthenticated}
-          adminPagesOpen={adminPagesOpen}
           onChangePage={handleChangePage}
           onEnterEditMode={() => setEditMode(true)}
           onExitEditMode={() => setEditMode(false)}
@@ -575,7 +593,7 @@ function Launcher() {
             setSsoAuthenticated(true);
             await loadSsoAdminServices();
             setAdminPagesOpen(true);
-            setCurrentPage(4);
+            setCurrentPageStart(ADMIN_START);
             setToastMessage('Chairman 인증 완료 · 관리자 앱 페이지가 열렸습니다.');
           }}
         />
@@ -590,8 +608,7 @@ function Launcher() {
 
   return (
     <div
-      style={{ height: 'var(--app-height, 100dvh)' }}
-      className={`fixed top-0 right-0 left-0 flex w-full flex-col overflow-hidden bg-slate-950 text-white${isLocked ? '' : ' launcher-safe-area'}`}
+      className={`launcher-mobile-shell fixed top-0 right-0 left-0 flex w-full flex-col overflow-hidden bg-slate-950 text-white${isLocked ? '' : ' launcher-safe-area'}`}
     >
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-slate-950 text-white">
         {isLocked ? (
@@ -616,7 +633,7 @@ function Launcher() {
               <PagedAppGrid
                 appsById={appsById}
                 slots={displaySlots}
-                pageCount={pageCount}
+                pageStarts={pageStarts}
                 currentPage={currentPage}
                 editMode={editMode}
                 widgetHome={<WidgetHome
@@ -697,7 +714,8 @@ function Launcher() {
               onToggleAppList={() => {
                 music.stop();
                 setIsWallpaperOpen(false);
-                setIsAppListOpen((prev) => !prev);
+                if (!isAppListOpen) refreshCatalogs();
+                setIsAppListOpen(!isAppListOpen);
               }}
             />
           </>
@@ -726,7 +744,7 @@ function Launcher() {
           setSsoAuthenticated(true);
           await loadSsoAdminServices();
           setAdminPagesOpen(true);
-          setCurrentPage(4);
+          setCurrentPageStart(ADMIN_START);
           setToastMessage('Chairman 인증 완료 · 관리자 앱 페이지가 열렸습니다.');
         }}
       />

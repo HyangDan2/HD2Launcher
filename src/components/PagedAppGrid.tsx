@@ -2,15 +2,12 @@ import { Check, X } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import { LauncherApp } from '../types/launcher';
 import { IconGlyph } from './IconGlyph';
-
-export const MAX_PAGES = 5;
-export const SLOTS_PER_PAGE = 20; // 4 cols x 5 rows
-export const TOTAL_SLOTS = MAX_PAGES * SLOTS_PER_PAGE;
+import { SLOTS_PER_PAGE } from '../data/layout';
 
 interface PagedAppGridProps {
   appsById: Map<string, LauncherApp>;
   slots: (string | null)[];
-  pageCount: number;
+  pageStarts: number[];
   currentPage: number;
   editMode: boolean;
   widgetHome: ReactNode;
@@ -26,7 +23,7 @@ interface PagedAppGridProps {
 export function PagedAppGrid({
   appsById,
   slots,
-  pageCount,
+  pageStarts,
   currentPage,
   editMode,
   widgetHome,
@@ -38,6 +35,7 @@ export function PagedAppGrid({
   onRemoveCustomApp,
   onOpenWallpaperPicker,
 }: PagedAppGridProps) {
+  const pageCount = pageStarts.length + 1;
   const [draggingFromSlot, setDraggingFromSlot] = useState<number | null>(null);
   const [hoverSlot, setHoverSlot] = useState<number | null>(null);
   const [swipeOffsetX, setSwipeOffsetX] = useState(0);
@@ -315,13 +313,12 @@ export function PagedAppGrid({
         }}
       >
         <div inert={currentPage !== 0} className="flex h-full w-full shrink-0 flex-col">{widgetHome}</div>
-        {Array.from({ length: pageCount - 1 }).map((_, pageIndex) => {
-          const pageStart = pageIndex * SLOTS_PER_PAGE;
+        {pageStarts.map((pageStart, pageIndex) => {
           const pageSlots = slots.slice(pageStart, pageStart + SLOTS_PER_PAGE);
 
           return (
             <div
-              key={pageIndex}
+              key={pageStart}
               inert={currentPage !== pageIndex + 1}
               className="grid h-full w-full shrink-0 grid-cols-4 grid-rows-5 gap-x-2 gap-y-1.5 px-4"
             >

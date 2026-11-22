@@ -19,6 +19,7 @@ import { PagedAppGrid } from './PagedAppGrid';
 import { isMusicApp, MusicPlayerSurface, useMusicLauncher } from './MusicPlayer';
 import { WidgetHome } from './WidgetHome';
 import { MOMENTS_APP } from '../data/services';
+import { ADMIN_GATE_START, ADMIN_START, SLOTS_PER_PAGE, TOTAL_SLOTS, WEB_START, isAdminPage } from '../data/layout';
 
 const BASE = import.meta.env.BASE_URL;
 const PC_HOME_WP = `${BASE}wallpapers/pc/homescreen.jpg`;
@@ -32,13 +33,12 @@ interface DesktopLauncherProps {
   apps: LauncherApp[];
   pinnedIds: ReadonlySet<string>;
   onPinApp: (app: LauncherApp) => void;
+  onOpenCatalog: () => void;
   appsById: Map<string, LauncherApp>;
   slots: (string | null)[];
-  pageCount: number;
+  pageStarts: number[];
   currentPage: number;
   editMode: boolean;
-  ssoAuthenticated: boolean;
-  adminPagesOpen: boolean;
   onChangePage: (page: number) => void;
   onEnterEditMode: () => void;
   onExitEditMode: () => void;
@@ -56,13 +56,12 @@ export function DesktopLauncher({
   apps,
   pinnedIds,
   onPinApp,
+  onOpenCatalog,
   appsById,
   slots,
-  pageCount,
+  pageStarts,
   currentPage,
   editMode,
-  ssoAuthenticated,
-  adminPagesOpen,
   onChangePage,
   onEnterEditMode,
   onExitEditMode,
@@ -73,6 +72,7 @@ export function DesktopLauncher({
   onServicesUpdated,
 }: DesktopLauncherProps) {
   const music = useMusicLauncher();
+  const pageCount = pageStarts.length + 1;
   const [now, setNow] = useState(() => new Date());
   const [windows, setWindows] = useState<OpenWindowState[]>([]);
   const [topZ, setTopZ] = useState(30);
@@ -82,6 +82,10 @@ export function DesktopLauncher({
   const [dockPinnedOpen, setDockPinnedOpen] = useState(false);
 
   const wheelLockRef = useRef(0);
+
+  useEffect(() => {
+    if (spotlightOpen) onOpenCatalog();
+  }, [spotlightOpen, onOpenCatalog]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000 * 15);
@@ -206,21 +210,20 @@ export function DesktopLauncher({
     weekday: 'short',
   });
 
-  const activeWallpaper = currentPage >= 4 ? PC_ADMIN_WP : pcHomeWp;
+  const activeWallpaper = isAdminPage(pageStarts[currentPage - 1]) ? PC_ADMIN_WP : pcHomeWp;
   const hasVisibleWindow = windows.some((w) => !w.minimized);
   const showRightDock = (!hasVisibleWindow && !music.visible) || dockPinnedOpen;
 
   const spaceTabs = [
     { page: 0, label: '위젯 홈' },
-    { page: 1, label: 'Server-HQ' },
-    { page: 2, label: 'Web-HQ' },
-    { page: 3, label: 'Admin' },
-    ...(ssoAuthenticated && adminPagesOpen
-      ? [
-          { page: 4, label: 'Admin 1' },
-          { page: 5, label: 'Admin 2' },
-        ]
-      : []),
+    ...pageStarts.map((start, index) => {
+      let label = 'Server-HQ';
+      if (start === WEB_START) label = 'Web-HQ';
+      else if (start >= TOTAL_SLOTS) label = `Web-HQ ${2 + (start - TOTAL_SLOTS) / SLOTS_PER_PAGE}`;
+      else if (start === ADMIN_GATE_START) label = 'Admin';
+      else if (isAdminPage(start)) label = `Admin ${1 + (start - ADMIN_START) / SLOTS_PER_PAGE}`;
+      return { page: index + 1, label };
+    }),
   ];
 
   return (
@@ -376,7 +379,7 @@ export function DesktopLauncher({
             <PagedAppGrid
               appsById={appsById}
               slots={slots}
-              pageCount={pageCount}
+              pageStarts={pageStarts}
               currentPage={currentPage}
               editMode={editMode}
               widgetHome={<WidgetHome
