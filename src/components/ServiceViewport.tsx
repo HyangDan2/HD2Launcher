@@ -1,3 +1,4 @@
+import { embeddedAppUrl } from '../data/embed';
 import { ShieldAlert } from 'lucide-react';
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { LauncherApp } from '../types/launcher';
@@ -63,7 +64,7 @@ export function ServiceViewport({ app, ref }: ServiceViewportProps) {
           ref={frameRef}
           onLoad={() => { pendingBack.current = undefined; }}
           key={`${app.id}-${reloadSeq}`}
-          src={app.url}
+          src={embeddedAppUrl(app.url)}
           title={app.name}
           className="h-full w-full border-0 bg-white"
           sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"

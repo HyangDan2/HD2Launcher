@@ -1,3 +1,4 @@
+import { embeddedAppUrl } from '../data/embed';
 import { ExternalLink, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { LauncherApp } from '../types/launcher';
@@ -176,7 +177,7 @@ export function DesktopWindow({
           <>
             <iframe
               key={`${app.id}-${reloadSeq}`}
-              src={app.url}
+              src={embeddedAppUrl(app.url)}
               title={app.name}
               className="h-full w-full border-0 bg-white"
               sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
