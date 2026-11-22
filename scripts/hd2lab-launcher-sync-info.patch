@@ -1,0 +1,15 @@
+Production launcher catalog sync
+Install web-hq-info-links.json as /usr/local/lib/hd2lab-launcher-web-hq-info.json before applying this patch with patch -p1 in /usr/local/lib. The systemd timer invokes the script on the next run.
+
+--- a/hd2lab-launcher-sync.py
++++ b/hd2lab-launcher-sync.py
+@@ -99,7 +99,8 @@
+             item['thumbnailUrl'] = f"https://hyangdan2.github.io/GameHub/{g['thumbnail']}"
+         game_items.append(item)
+ 
+-    combined = hub_links + app_items + game_items
++    info_links = json.loads(Path(__file__).with_name('hd2lab-launcher-web-hq-info.json').read_text(encoding='utf-8'))
++    combined = hub_links + info_links + app_items + game_items
+     DATA_DIR.mkdir(parents=True, exist_ok=True)
+     WEB_HQ_APPS_PATH.write_text(json.dumps({'updatedAt': datetime.now(timezone.utc).isoformat(), 'apps': combined}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+     return len(combined)

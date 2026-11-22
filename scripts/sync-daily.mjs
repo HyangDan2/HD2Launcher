@@ -136,7 +136,8 @@ async function syncWebHqApps() {
     }))
     .filter((g) => Boolean(g.url));
 
-  const combined = [...hubLinks, ...appItems, ...gameItems];
+  const infoLinks = JSON.parse(await fs.readFile(new URL('./web-hq-info-links.json', import.meta.url), 'utf-8'));
+  const combined = [...hubLinks, ...infoLinks, ...appItems, ...gameItems];
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(
     WEB_HQ_APPS_PATH,

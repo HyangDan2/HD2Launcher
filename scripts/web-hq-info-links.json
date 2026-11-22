@@ -1,0 +1,29 @@
+[
+  {
+    "id": "webhq-information-hub",
+    "name": "InformationHub",
+    "subtitle": "Web-HQ · Info",
+    "category": "web-hq",
+    "iconName": "Globe",
+    "gradient": "from-sky-400 via-blue-500 to-indigo-600",
+    "url": "https://hyangdan2.github.io/InformationHub/"
+  },
+  {
+    "id": "webhq-china-ai",
+    "name": "China AI",
+    "subtitle": "InformationHub",
+    "category": "web-hq",
+    "iconName": "Cpu",
+    "gradient": "from-violet-400 via-purple-500 to-fuchsia-600",
+    "url": "https://hyangdan2.github.io/InformationHub/china-ai/"
+  },
+  {
+    "id": "webhq-us-markets",
+    "name": "US Markets",
+    "subtitle": "InformationHub",
+    "category": "web-hq",
+    "iconName": "BarChart3",
+    "gradient": "from-emerald-400 via-teal-500 to-cyan-600",
+    "url": "https://hyangdan2.github.io/InformationHub/us-markets/"
+  }
+]

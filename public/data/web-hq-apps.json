@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-21T23:39:08.421Z",
+  "updatedAt": "2026-11-22T03:18:53.936185+00:00",
   "apps": [
     {
       "id": "webhq-main",
@@ -27,6 +27,33 @@
       "iconName": "BookOpen",
       "gradient": "from-amber-400 via-orange-500 to-rose-500",
       "url": "https://hyangdan2.github.io/diary/"
+    },
+    {
+      "id": "webhq-information-hub",
+      "name": "InformationHub",
+      "subtitle": "Web-HQ · Info",
+      "category": "web-hq",
+      "iconName": "Globe",
+      "gradient": "from-sky-400 via-blue-500 to-indigo-600",
+      "url": "https://hyangdan2.github.io/InformationHub/"
+    },
+    {
+      "id": "webhq-china-ai",
+      "name": "China AI",
+      "subtitle": "InformationHub",
+      "category": "web-hq",
+      "iconName": "Cpu",
+      "gradient": "from-violet-400 via-purple-500 to-fuchsia-600",
+      "url": "https://hyangdan2.github.io/InformationHub/china-ai/"
+    },
+    {
+      "id": "webhq-us-markets",
+      "name": "US Markets",
+      "subtitle": "InformationHub",
+      "category": "web-hq",
+      "iconName": "BarChart3",
+      "gradient": "from-emerald-400 via-teal-500 to-cyan-600",
+      "url": "https://hyangdan2.github.io/InformationHub/us-markets/"
     },
     {
       "id": "app-midpoint",
@@ -90,7 +117,7 @@
     },
     {
       "id": "app-vektra-var",
-      "name": "Vektra Vár",
+      "name": "ObjectLens",
       "subtitle": "Objects, seen on your device.",
       "category": "web-hq",
       "iconName": "AppWindow",
@@ -100,7 +127,7 @@
     },
     {
       "id": "app-visna-sol",
-      "name": "Vísna Sól",
+      "name": "CodePlayground",
       "subtitle": "Git, Python, Linux and SQL by typing.",
       "category": "web-hq",
       "iconName": "AppWindow",
@@ -110,7 +137,7 @@
     },
     {
       "id": "app-nordlys",
-      "name": "Nordlys",
+      "name": "CinePlate",
       "subtitle": "Film grades and frames, photo or clip.",
       "category": "web-hq",
       "iconName": "AppWindow",
@@ -120,7 +147,7 @@
     },
     {
       "id": "app-saga-glitra",
-      "name": "Sága Glitra",
+      "name": "SlideDeck",
       "subtitle": "Slides that study with you.",
       "category": "web-hq",
       "iconName": "AppWindow",
@@ -130,7 +157,7 @@
     },
     {
       "id": "app-mynda-ljosa",
-      "name": "Mynda Ljósa",
+      "name": "FrameBuilder",
       "subtitle": "Draw your own four-cut frame.",
       "category": "web-hq",
       "iconName": "AppWindow",
@@ -146,8 +173,8 @@
       "iconName": "Gamepad2",
       "gradient": "from-fuchsia-500 via-purple-600 to-indigo-700",
       "url": "https://hyangdan2.github.io/AGPilot0001/",
-      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/valkyrie-eira.webp",
-      "allowZoom": true
+      "allowZoom": true,
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/valkyrie-eira.webp"
     },
     {
       "id": "game-particle-beat",
@@ -157,8 +184,8 @@
       "iconName": "Gamepad2",
       "gradient": "from-rose-500 via-red-600 to-orange-600",
       "url": "https://hyangdan2.github.io/CDXPilot0004/",
-      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/particle-beat.webp",
-      "allowZoom": true
+      "allowZoom": true,
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/particle-beat.webp"
     },
     {
       "id": "game-valkyrie",
@@ -168,8 +195,8 @@
       "iconName": "Gamepad2",
       "gradient": "from-cyan-500 via-blue-600 to-indigo-700",
       "url": "https://hyangdan2.github.io/CDXPilot0005/",
-      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/valkyrie.webp",
-      "allowZoom": true
+      "allowZoom": true,
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/valkyrie.webp"
     },
     {
       "id": "game-chibilink",
@@ -179,8 +206,8 @@
       "iconName": "Gamepad2",
       "gradient": "from-emerald-500 via-teal-600 to-cyan-700",
       "url": "https://hyangdan2.github.io/CDXPilot0006/",
-      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/chibilink.webp",
-      "allowZoom": true
+      "allowZoom": true,
+      "thumbnailUrl": "https://hyangdan2.github.io/GameHub/assets/games/chibilink.webp"
     }
   ]
 }
