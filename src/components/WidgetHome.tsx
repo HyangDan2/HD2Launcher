@@ -12,10 +12,11 @@ const control = 'inline-flex min-h-9 items-center justify-center gap-1 rounded-l
 const heading = 'flex min-w-0 items-center gap-2 text-sm font-semibold';
 const pending = 'shrink-0 text-[11px] text-violet-200';
 
-export function WidgetHome({ active, onOpenLog, onOpenApps }: {
+export function WidgetHome({ active, onOpenLog, onOpenApps, onOpenMoments }: {
   active: boolean;
   onOpenLog: () => void;
   onOpenApps: () => void;
+  onOpenMoments: () => void;
 }) {
   const [changes, setChanges] = useState<PatchChange[]>([]);
   const [index, setIndex] = useState(0);
@@ -92,14 +93,14 @@ export function WidgetHome({ active, onOpenLog, onOpenApps }: {
           </div>
         </section>
 
-        <a href="/gram/" className={tile + ' block focus-visible:outline-2 focus-visible:outline-violet-300'}>
-          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-            <h2 className={heading}><img src="/gram/moments.png" alt="" className="size-5 shrink-0" />향단이의 Moments</h2>
+        <button type="button" onClick={onOpenMoments} className={tile + ' block text-left focus-visible:outline-2 focus-visible:outline-violet-300'}>
+          <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+            <strong className={heading}><img src="/gram/moments.png" alt="" className="size-5 shrink-0" />향단이의 Moments</strong>
             <span className={pending}>피드 보기 ↗</span>
-          </div>
+          </span>
           {gram && <img src={gram.image} alt={gram.alt} className="mt-2 h-20 w-full rounded-lg object-cover sm:h-24" draggable={false} />}
-          <p className="mt-2 line-clamp-2 text-xs text-slate-200">{gramStatus === 'loading' ? '불러오는 중…' : gramStatus === 'error' ? '피드를 불러올 수 없습니다.' : gramStatus === 'empty' ? '아직 게시물이 없습니다.' : gram?.caption || '향단이의 새 게시물'}</p>
-        </a>
+          <span className="mt-2 line-clamp-2 text-xs text-slate-200">{gramStatus === 'loading' ? '불러오는 중…' : gramStatus === 'error' ? '피드를 불러올 수 없습니다.' : gramStatus === 'empty' ? '아직 게시물이 없습니다.' : gram?.caption || '향단이의 새 게시물'}</span>
+        </button>
 
         <section className={tile}>
           <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">

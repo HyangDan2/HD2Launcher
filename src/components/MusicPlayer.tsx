@@ -1,22 +1,25 @@
-import { ArrowLeft, Music2, Pause, Play } from 'lucide-react';
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Music2, Play } from 'lucide-react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { ServiceTopBar } from './ServiceTopBar';
 
 const MUSIC_PATH = '/hd2music/';
 const DEFAULT_COVER = MUSIC_PATH + 'favicon.svg';
-
-type MusicState = {
-  title: string | null;
-  artist: string;
-  artwork: string | null;
-  position: number;
-  duration: number;
-  playing: boolean;
-  ready: boolean;
-  loading: boolean;
+const MUSIC_APP = {
+  name: 'HD2Music',
+  url: MUSIC_PATH,
+  iconName: 'Music2',
+  gradient: 'from-violet-500 via-purple-500 to-fuchsia-600',
 };
 
-type Controls = { toggle: () => void; stop: () => void };
-type MusicContext = { state: MusicState | null; open: () => void; stop: () => void; toggle: () => void };
+type Track = { title: string | null; artist: string; artwork: string | null };
+type MusicWindow = Window & { hd2MusicControls?: { stop: () => void } };
+type MusicContext = {
+  track: Track | null;
+  frame: RefObject<HTMLIFrameElement | null>;
+  visible: boolean;
+  open: () => void;
+  stop: () => void;
+};
 const Context = createContext<MusicContext | null>(null);
 
 export function isMusicApp(url: string) {
@@ -38,93 +41,87 @@ function cover(value: unknown): string | null {
   return /^\/hd2music\/api\/v1\/tracks\/[a-f0-9]{24}\/cover$/.test(value) ? value : null;
 }
 
-export function MusicPlayerProvider({children}: {children: ReactNode}) {
-  const iframe = useRef<HTMLIFrameElement>(null);
-  const [state, setState] = useState<MusicState | null>(null);
+function stopPlayback(frame: HTMLIFrameElement | null) {
+  try {
+    (frame?.contentWindow as MusicWindow | null)?.hd2MusicControls?.stop();
+  } catch {
+    // Removing the frame also stops playback if its document is no longer reachable.
+  }
+}
+
+export function MusicPlayerProvider({ children }: { children: ReactNode }) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [track, setTrack] = useState<Track | null>(null);
   const [visible, setVisible] = useState(false);
-  const back = useRef<HTMLButtonElement>(null);
   const opener = useRef<HTMLElement | null>(null);
-  const controls = useCallback(() => {
-    try { return (iframe.current?.contentWindow as (Window & {hd2MusicControls?: Controls}) | null)?.hd2MusicControls; }
-    catch { return undefined; }
-  }, []);
-  const close = useCallback(() => {
-    setVisible(false);
-    opener.current?.focus();
-  }, []);
+
   const open = useCallback(() => {
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setVisible(true);
   }, []);
-  const stop = useCallback(() => { controls()?.stop(); setVisible(false); }, [controls]);
-  const toggle = useCallback(() => { controls()?.toggle(); }, [controls]);
+
+  const stop = useCallback(() => {
+    stopPlayback(frame.current);
+    setVisible(false);
+    opener.current?.focus();
+    opener.current = null;
+  }, []);
 
   useEffect(() => {
+    if (!visible) return;
     const receive = (event: MessageEvent) => {
       const message = event.data;
-      if (event.origin !== location.origin || event.source !== iframe.current?.contentWindow || message?.type !== 'hd2music:state') return;
-      setState({
-        title: typeof message.title === 'string' ? message.title : null,
-        artist: typeof message.artist === 'string' ? message.artist : '',
-        artwork: cover(message.artwork),
-        position: Number.isFinite(message.position) ? Number(message.position) : 0,
-        duration: Number.isFinite(message.duration) ? Number(message.duration) : 0,
-        playing: message.playing === true,
-        ready: message.ready === true,
-        loading: message.loading === true,
-      });
+      if (event.origin !== location.origin || event.source !== frame.current?.contentWindow || message?.type !== 'hd2music:state') return;
+      const title = typeof message.title === 'string' ? message.title : null;
+      const artist = typeof message.artist === 'string' ? message.artist : '';
+      const artwork = cover(message.artwork);
+      setTrack((previous) => previous && previous.title === title && previous.artist === artist && previous.artwork === artwork
+        ? previous
+        : { title, artist, artwork });
     };
     window.addEventListener('message', receive);
     return () => window.removeEventListener('message', receive);
-  }, []);
-  useEffect(() => {
-    if (visible) back.current?.focus();
   }, [visible]);
 
-  return <Context.Provider value={{state, open, stop, toggle}}>
-    {children}
-    <section
-      aria-label="HD2Music 플레이어"
-      hidden={!visible}
-      className="fixed inset-0 z-[80] flex flex-col bg-slate-950 text-white"
-    >
-      <header className="flex shrink-0 items-center border-b border-white/15 px-3 py-1">
-        <button ref={back} type="button" onClick={close} className="inline-flex min-h-10 items-center gap-2 rounded-lg px-2 hover:bg-white/10">
-          <ArrowLeft className="size-4" aria-hidden /> Launcher로 돌아가기
-        </button>
-      </header>
-      <iframe ref={iframe} title="HD2Music" src={MUSIC_PATH + '?embed=launcher'}
+  return <Context.Provider value={{ track, frame, visible, open, stop }}>{children}</Context.Provider>;
+}
+
+export function MusicPlayerSurface({ desktop = false }: { desktop?: boolean }) {
+  const { visible, frame, stop } = useMusicLauncher();
+  const [reloadSeq, setReloadSeq] = useState(0);
+  const surface = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (visible) surface.current?.focus({ preventScroll: true });
+  }, [visible]);
+
+  if (!visible) return null;
+  return (
+    <section ref={surface} tabIndex={-1} aria-label="HD2Music 플레이어"
+      className="absolute inset-0 z-[25] flex flex-col bg-slate-950 text-white md:z-40">
+      <ServiceTopBar app={MUSIC_APP} onClose={desktop ? stop : undefined} onReload={() => {
+        stopPlayback(frame.current);
+        setReloadSeq((sequence) => sequence + 1);
+      }} />
+      <iframe key={reloadSeq} ref={frame} title="HD2Music" src={MUSIC_PATH + '?embed=launcher'}
         className="min-h-0 w-full flex-1 border-0" allow="autoplay"
         sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups" />
     </section>
-  </Context.Provider>;
-}
-
-function clock(total: number) {
-  const seconds = Math.max(0, Math.floor(total));
-  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  );
 }
 
 export function MusicWidget() {
-  const {state, open, toggle} = useMusicLauncher();
-  return <div className="flex items-stretch gap-1">
+  const { track, open } = useMusicLauncher();
+  return (
     <button type="button" onClick={open} aria-label="HD2Music 전체 플레이어 열기"
-      className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1 py-1 text-left hover:bg-white/10">
-      <img src={state?.artwork ?? DEFAULT_COVER} alt="" className="size-11 rounded-md bg-slate-800 object-cover"
+      className="flex w-full min-w-0 items-center gap-2.5 rounded-lg px-1 py-1 text-left hover:bg-white/10">
+      <img src={track?.artwork ?? DEFAULT_COVER} alt="" className="size-11 rounded-md bg-slate-800 object-cover"
         onError={(event) => { if (event.currentTarget.getAttribute('src') !== DEFAULT_COVER) event.currentTarget.src = DEFAULT_COVER; }} />
       <span className="min-w-0 flex-1 text-xs">
         <span className="flex items-center gap-1.5 text-slate-300"><Music2 className="size-3" aria-hidden /> HD2Music</span>
-        <strong className="block truncate">{state?.title || '음악 보관함'}</strong>
-        {state?.artist && <span className="block truncate text-slate-300">{state.artist}</span>}
-        {!!state?.duration && <progress className="mt-1 h-1 w-full accent-violet-300" aria-label="재생 진행률"
-          value={state.position} max={state.duration} />}
+        <strong className="block truncate">{track?.title || '음악 보관함'}</strong>
+        {track?.artist && <span className="block truncate text-slate-300">{track.artist}</span>}
       </span>
-      {!!state?.duration && <span className="self-center text-xs tabular-nums text-slate-300">{clock(state.position)}</span>}
+      <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-white/10"><Play className="size-4" aria-hidden /></span>
     </button>
-    <button type="button" disabled={!state?.ready || state.loading} onClick={toggle}
-      aria-label={state?.playing ? '음악 일시정지' : '음악 재생'}
-      className="grid min-h-11 min-w-11 place-items-center self-center rounded-lg hover:bg-white/15 disabled:opacity-40">
-      {state?.playing ? <Pause className="size-4" aria-hidden /> : <Play className="size-4" aria-hidden />}
-    </button>
-  </div>;
+  );
 }

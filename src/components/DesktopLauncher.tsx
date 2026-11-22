@@ -16,8 +16,9 @@ import { DesktopSpotlight } from './DesktopSpotlight';
 import { DesktopWindow, OpenWindowState } from './DesktopWindow';
 import { IconGlyph } from './IconGlyph';
 import { PagedAppGrid } from './PagedAppGrid';
-import { isMusicApp, useMusicLauncher } from './MusicPlayer';
+import { isMusicApp, MusicPlayerSurface, useMusicLauncher } from './MusicPlayer';
 import { WidgetHome } from './WidgetHome';
+import { MOMENTS_APP } from '../data/services';
 
 const BASE = import.meta.env.BASE_URL;
 const PC_HOME_WP = `${BASE}wallpapers/pc/homescreen.jpg`;
@@ -93,10 +94,11 @@ export function DesktopLauncher({
         e.preventDefault();
         if (!isLocked) setSpotlightOpen((p) => !p);
       } else if (e.key === 'Escape') {
+        if (music.visible) music.stop();
         setSpotlightOpen(false);
         setWpMenuOpen(false);
         setDockPinnedOpen(false);
-      } else if (!isLocked && !spotlightOpen) {
+      } else if (!isLocked && !spotlightOpen && !music.visible) {
         if (e.key === 'ArrowRight' && currentPage < pageCount - 1) {
           onChangePage(currentPage + 1);
         } else if (e.key === 'ArrowLeft' && currentPage > 0) {
@@ -106,7 +108,7 @@ export function DesktopLauncher({
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [isLocked, spotlightOpen, currentPage, pageCount, onChangePage]);
+  }, [isLocked, spotlightOpen, currentPage, pageCount, onChangePage, music.visible, music.stop]);
 
   const handleLaunchApp = (app: LauncherApp) => {
     setSpotlightOpen(false);
@@ -156,7 +158,7 @@ export function DesktopLauncher({
   };
 
   const handleWheelPageFlip = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (windows.some((w) => !w.minimized)) return;
+    if (music.visible || windows.some((w) => !w.minimized)) return;
     const nowMs = Date.now();
     if (nowMs - wheelLockRef.current < 340) return;
 
@@ -206,7 +208,7 @@ export function DesktopLauncher({
 
   const activeWallpaper = currentPage >= 4 ? PC_ADMIN_WP : pcHomeWp;
   const hasVisibleWindow = windows.some((w) => !w.minimized);
-  const showRightDock = !hasVisibleWindow || dockPinnedOpen;
+  const showRightDock = (!hasVisibleWindow && !music.visible) || dockPinnedOpen;
 
   const spaceTabs = [
     { page: 0, label: '위젯 홈' },
@@ -358,7 +360,7 @@ export function DesktopLauncher({
       </header>
 
       {/* Main Desktop Area (Left-aligned grid + crisp page arrows) */}
-      <main className="relative flex flex-1 overflow-hidden">
+      <main className="relative isolate flex flex-1 overflow-hidden">
         <div className={`relative flex h-full w-full items-center pl-4 pr-2 pt-2 pb-4 ${currentPage === 0 ? "max-w-[660px]" : "max-w-[460px]"}`}>
           <button
             type="button"
@@ -378,12 +380,13 @@ export function DesktopLauncher({
               currentPage={currentPage}
               editMode={editMode}
               widgetHome={<WidgetHome
-                active={currentPage === 0 && !hasVisibleWindow && !spotlightOpen}
+                active={currentPage === 0 && !music.visible && !hasVisibleWindow && !spotlightOpen}
                 onOpenLog={() => {
                   const log = appsById.get('update-log');
                   if (log) handleLaunchApp(log);
                 }}
                 onOpenApps={() => onChangePage(1)}
+                onOpenMoments={() => handleLaunchApp(MOMENTS_APP)}
               />}
               onChangePage={onChangePage}
               onEnterEditMode={onEnterEditMode}
@@ -454,6 +457,7 @@ export function DesktopLauncher({
             onServicesUpdated={onServicesUpdated}
           />
         ))}
+        <MusicPlayerSurface desktop />
       </main>
 
       {/* Right-side Vertical Dock (Auto-hides when an app window is open) */}

@@ -4,7 +4,7 @@ import { AdminServicesView } from './components/AdminServicesView';
 import { AppListDrawer } from './components/AppListDrawer';
 import { ChairmanLoginModal } from './components/ChairmanLoginModal';
 import { DesktopLauncher } from './components/DesktopLauncher';
-import { isMusicApp, MusicPlayerProvider, useMusicLauncher } from './components/MusicPlayer';
+import { isMusicApp, MusicPlayerProvider, MusicPlayerSurface, useMusicLauncher } from './components/MusicPlayer';
 import { LockScreen } from './components/LockScreen';
 import {
   PagedAppGrid,
@@ -24,6 +24,7 @@ import {
   CORE_ADMIN_APPS,
   DEFAULT_SERVICES,
   LAUNCHER_WALLPAPERS,
+  MOMENTS_APP,
 } from './data/services';
 import { LauncherApp } from './types/launcher';
 
@@ -458,6 +459,10 @@ function Launcher() {
   };
 
   const handleNavBack = () => {
+    if (music.visible) {
+      music.stop();
+      return;
+    }
     if (isWallpaperOpen) {
       setIsWallpaperOpen(false);
       return;
@@ -484,6 +489,7 @@ function Launcher() {
   };
 
   const handleNavHome = () => {
+    music.stop();
     setIsWallpaperOpen(false);
     setIsAppListOpen(false);
     setActiveApp(null);
@@ -623,12 +629,13 @@ function Launcher() {
                 currentPage={currentPage}
                 editMode={editMode}
                 widgetHome={<WidgetHome
-                  active={currentPage === 0 && !activeApp && !isAppListOpen && !isWallpaperOpen}
+                  active={currentPage === 0 && !activeApp && !music.visible && !isAppListOpen && !isWallpaperOpen}
                   onOpenLog={() => {
                     const log = appsById.get('update-log');
                     if (log) handleLaunchApp(log);
                   }}
                   onOpenApps={() => handleChangePage(1)}
+                  onOpenMoments={() => handleLaunchApp(MOMENTS_APP)}
                 />}
                 onChangePage={handleChangePage}
                 onEnterEditMode={() => setEditMode(true)}
@@ -651,6 +658,8 @@ function Launcher() {
               ) : (
                 activeApp && <ServiceViewport key={activeApp.id} app={activeApp} ref={serviceViewportRef} />
               )}
+
+              <MusicPlayerSurface />
 
               {/* App List Drawer */}
               <AppListDrawer
@@ -695,6 +704,7 @@ function Launcher() {
               onBack={handleNavBack}
               onHome={handleNavHome}
               onToggleAppList={() => {
+                music.stop();
                 setIsWallpaperOpen(false);
                 setIsAppListOpen((prev) => !prev);
               }}

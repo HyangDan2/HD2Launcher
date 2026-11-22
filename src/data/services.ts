@@ -20,6 +20,16 @@ export const LAUNCHER_WALLPAPERS: WallpaperOption[] = [
   },
 ];
 
+export const MOMENTS_APP: LauncherApp = {
+  id: 'server-gram',
+  name: '향단이의 Moments',
+  subtitle: '공개 사진 피드',
+  category: 'service-hub',
+  iconName: 'Image',
+  gradient: 'from-pink-400 via-purple-500 to-indigo-600',
+  url: '/gram/',
+};
+
 export const ADMIN_WALLPAPER_SRC = `${BASE}wallpapers/admin-bg.png`;
 
 export const ADMIN_GATE_APP: LauncherApp = {
