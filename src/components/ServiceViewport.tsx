@@ -1,16 +1,18 @@
 import { embeddedAppUrl } from '../data/embed';
+import {
+  IframeHistoryTracker,
+  type FrameWindowLike,
+} from '../data/iframeHistory';
 import { ShieldAlert } from 'lucide-react';
-import { useImperativeHandle, useRef, useState, type Ref } from 'react';
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+} from 'react';
 import { LauncherApp } from '../types/launcher';
 import { ServiceTopBar } from './ServiceTopBar';
-
-// The project's TypeScript DOM declarations predate the Navigation API.
-type FrameWindow = Window & {
-  navigation?: {
-    canGoBack: boolean;
-    back: () => { committed: Promise<unknown>; finished: Promise<unknown> };
-  };
-};
 
 export interface ServiceViewportHandle {
   goBack: () => boolean;
@@ -24,30 +26,82 @@ interface ServiceViewportProps {
 export function ServiceViewport({ app, ref }: ServiceViewportProps) {
   const [reloadSeq, setReloadSeq] = useState(0);
   const frameRef = useRef<HTMLIFrameElement>(null);
-  const pendingBack = useRef<FrameWindow['navigation']>(undefined);
+  const trackerRef = useRef(new IframeHistoryTracker());
 
-  useImperativeHandle(ref, () => ({
-    goBack() {
-      try {
-        // Consult the iframe's own entries so Back cannot leave the launcher tab.
-        const frameWindow = frameRef.current?.contentWindow as FrameWindow | null | undefined;
-        const navigation = frameWindow?.navigation;
-        if (!navigation) return false;
-        if (pendingBack.current === navigation) return true;
-        if (!navigation.canGoBack) return false;
-        const { committed, finished } = navigation.back();
-        pendingBack.current = navigation;
-        void committed.catch(() => {}).finally(() => {
-          if (pendingBack.current === navigation) pendingBack.current = undefined;
-        });
-        void finished.catch(() => {});
-        return true;
-      } catch {
-        // Other origins cannot expose the iframe's history to the launcher.
-        return false;
-      }
-    },
-  }), []);
+  useEffect(() => {
+    trackerRef.current.reset();
+  }, [app.id, reloadSeq]);
+
+  const attachSameOriginListeners = (win: FrameWindowLike) => {
+    if (win.__hd2LauncherHistoryPatched) return;
+    win.__hd2LauncherHistoryPatched = true;
+
+    try {
+      const origPushState = win.history.pushState.bind(win.history);
+      win.history.pushState = function (...args) {
+        origPushState(...args);
+        try {
+          trackerRef.current.recordSameOriginUrl(win.location.href);
+        } catch {
+          // ignore
+        }
+      };
+
+      const origReplaceState = win.history.replaceState.bind(win.history);
+      win.history.replaceState = function (...args) {
+        origReplaceState(...args);
+        try {
+          trackerRef.current.replaceSameOriginUrl(win.location.href);
+        } catch {
+          // ignore
+        }
+      };
+
+      const handleLocationChange = () => {
+        try {
+          trackerRef.current.recordSameOriginUrl(win.location.href);
+        } catch {
+          // ignore
+        }
+      };
+
+      win.addEventListener('hashchange', handleLocationChange);
+      win.addEventListener('popstate', handleLocationChange);
+    } catch {
+      // ignore if window became cross-origin
+    }
+  };
+
+  const handleFrameLoad = () => {
+    trackerRef.current.onLoadCleared();
+    const win = frameRef.current?.contentWindow as
+      | FrameWindowLike
+      | null
+      | undefined;
+    if (!win) return;
+
+    try {
+      const href = win.location.href;
+      trackerRef.current.recordSameOriginUrl(href);
+      attachSameOriginListeners(win);
+    } catch {
+      trackerRef.current.recordCrossOriginLoad();
+    }
+  };
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      goBack() {
+        const frameWindow = frameRef.current?.contentWindow as
+          | FrameWindowLike
+          | null
+          | undefined;
+        return trackerRef.current.goBack(frameWindow, window);
+      },
+    }),
+    [],
+  );
 
   return (
     <div className="absolute inset-0 z-20 flex flex-col bg-slate-950">
@@ -62,7 +116,7 @@ export function ServiceViewport({ app, ref }: ServiceViewportProps) {
       >
         <iframe
           ref={frameRef}
-          onLoad={() => { pendingBack.current = undefined; }}
+          onLoad={handleFrameLoad}
           key={`${app.id}-${reloadSeq}`}
           src={embeddedAppUrl(app.url)}
           title={app.name}

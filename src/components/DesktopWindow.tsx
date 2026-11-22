@@ -1,5 +1,5 @@
 import { embeddedAppUrl } from '../data/embed';
-import { ExternalLink, RefreshCw, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, ExternalLink, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { LauncherApp } from '../types/launcher';
 import { AdminServicesView } from './AdminServicesView';
@@ -35,6 +35,7 @@ export function DesktopWindow({
   onServicesUpdated,
 }: DesktopWindowProps) {
   const [reloadSeq, setReloadSeq] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const dragStartRef = useRef<{
     mouseX: number;
     mouseY: number;
@@ -148,6 +149,21 @@ export function DesktopWindow({
           <div className="flex items-center gap-1.5">
             <button
               type="button"
+              onClick={() => {
+                try {
+                  iframeRef.current?.contentWindow?.history.back();
+                } catch {
+                  window.history.back();
+                }
+              }}
+              className="rounded-lg p-1 text-slate-300 hover:bg-white/10 hover:text-white"
+              title="뒤로가기"
+              aria-label="뒤로가기"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
               onClick={() => setReloadSeq((s) => s + 1)}
               className="rounded-lg p-1 text-slate-300 hover:bg-white/10 hover:text-white"
               title="새로고침"
@@ -176,6 +192,7 @@ export function DesktopWindow({
         ) : (
           <>
             <iframe
+              ref={iframeRef}
               key={`${app.id}-${reloadSeq}`}
               src={embeddedAppUrl(app.url)}
               title={app.name}
