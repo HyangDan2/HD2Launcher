@@ -305,7 +305,7 @@ export function PagedAppGrid({
 
       {/* Multi-Page Horizontal Carousel (responsive 5 rows, never clips on mobile PWA) */}
       <div
-        className="flex min-h-0 w-full flex-1 items-stretch pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-1"
+        className="flex min-h-0 w-full flex-1 items-stretch pt-3 md:pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-1"
         style={{
           transform: `translate3d(calc(${-currentPage * 100}% + ${swipeOffsetX}px), 0, 0)`,
           transition:

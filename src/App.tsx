@@ -103,20 +103,11 @@ function Launcher() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  // Dynamically allocate viewport height for both mobile browser (Chrome/Safari) and Standalone PWA
+  // Both browser tabs and installed launchers fit the currently visible viewport.
   useEffect(() => {
     const updateAppHeight = () => {
-      const isStandalone =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        Boolean((navigator as { standalone?: boolean }).standalone);
-      if (isStandalone) {
-        document.documentElement.style.setProperty('--app-height', '100lvh');
-      } else {
-        const h = Math.round(
-          window.visualViewport?.height ?? window.innerHeight,
-        );
-        document.documentElement.style.setProperty('--app-height', `${h}px`);
-      }
+      const height = window.visualViewport?.height ?? window.innerHeight;
+      if (height > 0) document.documentElement.style.setProperty('--app-height', `${Math.floor(height)}px`);
     };
 
     updateAppHeight();
@@ -600,7 +591,7 @@ function Launcher() {
   return (
     <div
       style={{ height: 'var(--app-height, 100dvh)' }}
-      className="fixed top-0 right-0 left-0 flex w-full flex-col overflow-hidden bg-slate-950 text-white"
+      className={`fixed top-0 right-0 left-0 flex w-full flex-col overflow-hidden bg-slate-950 text-white${isLocked ? '' : ' launcher-safe-area'}`}
     >
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-slate-950 text-white">
         {isLocked ? (
@@ -611,7 +602,7 @@ function Launcher() {
         ) : (
           <>
             {/* Main Viewport Area (above persistent PhoneNavBar) */}
-            <div className="relative flex flex-1 flex-col overflow-hidden">
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
               {/* Home / Admin Wallpaper */}
               <img
                 src={activeWallpaper}

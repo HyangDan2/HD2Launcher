@@ -22,6 +22,14 @@
   }
 }
 
+/* Embedded apps fit inside the launcher's safe content area. */
+.launcher-safe-area {
+  --launcher-safe-top: env(safe-area-inset-top, 0px);
+  --launcher-safe-bottom: env(safe-area-inset-bottom, 0px);
+  padding-top: var(--launcher-safe-top);
+  padding-bottom: var(--launcher-safe-bottom);
+}
+
 @keyframes jiggle {
   0%, 100% {
     transform: rotate(-1.5deg);
