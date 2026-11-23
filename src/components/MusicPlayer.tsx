@@ -2,7 +2,7 @@ import { Music2, Play } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { ServiceTopBar } from './ServiceTopBar';
 
-const MUSIC_PATH = '/hd2music/';
+const MUSIC_PATH = '/sona/';
 const DEFAULT_COVER = MUSIC_PATH + 'favicon.svg';
 const MUSIC_APP = {
   name: 'HD2Music',
@@ -25,7 +25,8 @@ const Context = createContext<MusicContext | null>(null);
 export function isMusicApp(url: string) {
   try {
     const resolved = new URL(url, location.origin);
-    return resolved.origin === location.origin && resolved.pathname.replace(/\/$/, '') === '/hd2music';
+    const normalized = resolved.pathname.replace(/\/$/, '');
+    return resolved.origin === location.origin && (normalized === '/sona' || normalized === '/hd2music');
   } catch { return false; }
 }
 
@@ -38,7 +39,7 @@ export function useMusicLauncher() {
 function cover(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   if (/^data:image\/(png|jpeg|gif|webp);base64,[a-z\d+/=]+$/i.test(value) && value.length <= 330000) return value;
-  return /^\/hd2music\/api\/v1\/tracks\/[a-f0-9]{24}\/cover$/.test(value) ? value : null;
+  return /^\/(sona|hd2music)\/api\/v1\/tracks\/[a-f0-9]{24}\/cover$/.test(value) ? value : null;
 }
 
 function stopPlayback(frame: HTMLIFrameElement | null) {
@@ -65,6 +66,24 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     setVisible(false);
     opener.current?.focus();
     opener.current = null;
+  }, []);
+
+  // Preload first recommended track from /sona/api/v1/catalog for the Home widget
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/sona/api/v1/catalog', { cache: 'no-store', signal: controller.signal })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json();
+        const first = Array.isArray(data?.recommended) ? data.recommended[0] : null;
+        if (!first || controller.signal.aborted) return;
+        const title = typeof first.title === 'string' ? first.title : null;
+        const artist = typeof first.artist === 'string' ? first.artist : '';
+        const artwork = cover(first.cover);
+        setTrack((previous) => previous ?? { title, artist, artwork });
+      })
+      .catch(() => {});
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
