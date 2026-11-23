@@ -455,7 +455,12 @@ function Launcher() {
       music.open();
       return;
     }
-    music.stop();
+    if (app.category === 'game') {
+      music.minimize();
+      music.pauseForApp();
+    } else {
+      music.minimize();
+    }
 
     if (app.internalView === 'admin-sso') {
       handleOpenAdminGate();
@@ -511,7 +516,11 @@ function Launcher() {
         backExitGuardRef.current.reset();
         return;
       }
-      confirmAppExit(() => setActiveApp(null));
+      confirmAppExit(() => {
+        const wasGame = activeApp.category === 'game';
+        setActiveApp(null);
+        if (wasGame) music.resumeAfterApp();
+      });
       return;
     }
     if (editMode) {
@@ -528,12 +537,14 @@ function Launcher() {
 
   const handleNavHome = () => {
     backExitGuardRef.current.reset();
-    music.stop();
+    const wasGame = activeApp?.category === 'game';
+    music.minimize();
     setIsWallpaperOpen(false);
     setIsAppListOpen(false);
     setActiveApp(null);
     setEditMode(false);
     setCurrentPageStart(null);
+    if (wasGame) music.resumeAfterApp();
   };
 
   const displaySlots = useMemo(
