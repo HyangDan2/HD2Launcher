@@ -1,11 +1,14 @@
 import { Activity, ChevronDown, ChevronRight, Images, Pause, Play } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MusicWidget } from './MusicPlayer';
 import type { PatchChange, PatchNote } from '../types/launcher';
 
 const BASE = import.meta.env.BASE_URL;
-const portrait = BASE + 'wallpapers/homescreen.jpg';
-const winter = BASE + 'wallpapers/pc/homescreen.jpg';
+const photoThumb1 = BASE + 'wallpapers/thumbs/photo-1.webp';
+const photoThumb2 = BASE + 'wallpapers/thumbs/photo-2.webp';
+const photoThumb3 = BASE + 'wallpapers/thumbs/photo-3.webp';
+const GRAM_REFRESH_MS = 60_000;
+const PATCH_REFRESH_MS = 300_000;
 
 const tile = 'min-w-0 rounded-2xl border border-white/20 bg-slate-950/85 p-3 text-white shadow-lg backdrop-blur-md';
 const control = 'inline-flex min-h-9 items-center justify-center gap-1 rounded-lg px-2 text-xs text-slate-100 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-violet-300';
@@ -24,33 +27,38 @@ export function WidgetHome({ active, onOpenLog, onOpenApps, onOpenMoments }: {
   const [loading, setLoading] = useState(true);
   const [gram, setGram] = useState<{ caption: string; image: string; alt: string } | null>(null);
   const [gramStatus, setGramStatus] = useState<'loading' | 'empty' | 'error' | 'ready'>('loading');
+  const gramFetchedAtRef = useRef(0);
+  const patchFetchedAtRef = useRef(0);
 
   useEffect(() => {
     if (!active) return;
+    if (gramFetchedAtRef.current > 0 && Date.now() - gramFetchedAtRef.current < GRAM_REFRESH_MS) return;
     const controller = new AbortController();
-    setGram(null);
-    setGramStatus('loading');
-    fetch('/gram/api/feed?account=hyangdan2&limit=1', { cache: 'no-store', signal: controller.signal })
+    fetch('/gram/api/feed?account=hyangdan2&limit=1', { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error('GRAM unavailable');
         const data = await response.json();
         const post = Array.isArray(data.items) ? data.items[0] : null;
+        if (controller.signal.aborted) return;
+        gramFetchedAtRef.current = Date.now();
         if (!post?.media?.[0]?.thumbUrl) { setGram(null); setGramStatus('empty'); return; }
         setGram({ caption: String(post.caption || ''), image: String(post.media[0].thumbUrl), alt: String(post.media[0].alt || '') });
         setGramStatus('ready');
       })
-      .catch(() => { if (!controller.signal.aborted) { setGram(null); setGramStatus('error'); } });
+      .catch(() => { if (!controller.signal.aborted && gramFetchedAtRef.current === 0) { setGram(null); setGramStatus('error'); } });
     return () => controller.abort();
   }, [active]);
 
   useEffect(() => {
     if (!active) return;
+    if (patchFetchedAtRef.current > 0 && Date.now() - patchFetchedAtRef.current < PATCH_REFRESH_MS) return;
     const controller = new AbortController();
-    fetch(BASE + 'data/patch-notes.json', { cache: 'no-store', signal: controller.signal })
+    fetch(BASE + 'data/patch-notes.json', { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error('Could not load patch notes');
         const notes: PatchNote[] = await response.json();
         if (controller.signal.aborted) return;
+        patchFetchedAtRef.current = Date.now();
         setChanges(Array.isArray(notes) ? notes.flatMap((note) => note.changes ?? []) : []);
         setIndex(0);
       })
@@ -108,9 +116,9 @@ export function WidgetHome({ active, onOpenLog, onOpenApps, onOpenMoments }: {
             <span className={pending}>준비 중</span>
           </div>
           <div className="mt-2 grid h-20 grid-cols-2 grid-rows-2 gap-1 overflow-hidden rounded-lg sm:h-24" aria-hidden>
-            <img src={portrait} alt="" className="row-span-2 h-full w-full object-cover" draggable={false} />
-            <img src={winter} alt="" className="h-full w-full object-cover object-left" draggable={false} />
-            <img src={BASE + 'wallpapers/pc/lockscreen.jpg'} alt="" className="h-full w-full object-cover" draggable={false} />
+            <img src={photoThumb1} alt="" loading="lazy" decoding="async" className="row-span-2 h-full w-full object-cover" draggable={false} />
+            <img src={photoThumb2} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover object-left" draggable={false} />
+            <img src={photoThumb3} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" draggable={false} />
           </div>
         </section>
 

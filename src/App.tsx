@@ -142,10 +142,16 @@ function Launcher() {
     }
   });
 
+function migrateWallpaperSrc(raw: string | null, fallback: string): string {
+  if (!raw) return fallback;
+  return raw.replace(/\/wallpapers\/(homescreen|lockscreen|admin-bg)\.(png|jpg)$/i, '/wallpapers/$1.webp');
+}
+
   const [homeWallpaper, setHomeWallpaper] = useState<string>(() => {
     try {
-      return (
-        localStorage.getItem(HOME_WP_KEY) ?? LAUNCHER_WALLPAPERS[0].src
+      return migrateWallpaperSrc(
+        localStorage.getItem(HOME_WP_KEY),
+        LAUNCHER_WALLPAPERS[0].src,
       );
     } catch {
       return LAUNCHER_WALLPAPERS[0].src;
@@ -154,8 +160,9 @@ function Launcher() {
 
   const [lockWallpaper, setLockWallpaper] = useState<string>(() => {
     try {
-      return (
-        localStorage.getItem(LOCK_WP_KEY) ?? LAUNCHER_WALLPAPERS[1].src
+      return migrateWallpaperSrc(
+        localStorage.getItem(LOCK_WP_KEY),
+        LAUNCHER_WALLPAPERS[1].src,
       );
     } catch {
       return LAUNCHER_WALLPAPERS[1].src;

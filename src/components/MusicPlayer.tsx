@@ -49,7 +49,10 @@ export function useMusicLauncher() {
 function cover(value: unknown): string | null {
   if (typeof value !== 'string') return null;
   if (/^data:image\/(png|jpeg|gif|webp);base64,[a-z\d+/=]+$/i.test(value) && value.length <= 330000) return value;
-  return /^\/(sona|hd2music)\/api\/v1\/tracks\/[a-f0-9]{24}\/cover$/.test(value) ? value : null;
+  if (/^\/(sona|hd2music)\/api\/v1\/tracks\/[a-f0-9]{24}\/cover$/.test(value)) {
+    return `${value}?w=160`;
+  }
+  return null;
 }
 
 function stopPlayback(frame: HTMLIFrameElement | null) {

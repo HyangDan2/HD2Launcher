@@ -22,9 +22,9 @@ import { MOMENTS_APP } from '../data/services';
 import { ADMIN_GATE_START, ADMIN_START, SLOTS_PER_PAGE, TOTAL_SLOTS, WEB_START, isAdminPage } from '../data/layout';
 
 const BASE = import.meta.env.BASE_URL;
-const PC_HOME_WP = `${BASE}wallpapers/pc/homescreen.jpg`;
-const PC_LOCK_WP = `${BASE}wallpapers/pc/lockscreen.jpg`;
-const PC_ADMIN_WP = `${BASE}wallpapers/pc/admin-bg.png`;
+const PC_HOME_WP = `${BASE}wallpapers/pc/homescreen.webp`;
+const PC_LOCK_WP = `${BASE}wallpapers/pc/lockscreen.webp`;
+const PC_ADMIN_WP = `${BASE}wallpapers/pc/admin-bg.webp`;
 
 interface DesktopLauncherProps {
   isLocked: boolean;

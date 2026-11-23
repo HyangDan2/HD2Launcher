@@ -6,17 +6,17 @@ export const LAUNCHER_WALLPAPERS: WallpaperOption[] = [
   {
     id: 'winter-street',
     label: '눈 내리는 거리',
-    src: `${BASE}wallpapers/homescreen.jpg`,
+    src: `${BASE}wallpapers/homescreen.webp`,
   },
   {
     id: 'winter-hands',
     label: '겨울밤 인사',
-    src: `${BASE}wallpapers/lockscreen.png`,
+    src: `${BASE}wallpapers/lockscreen.webp`,
   },
   {
     id: 'hd2lab-dark',
     label: 'HD²LAB Beyond',
-    src: `${BASE}wallpapers/admin-bg.png`,
+    src: `${BASE}wallpapers/admin-bg.webp`,
   },
 ];
 
@@ -30,7 +30,7 @@ export const MOMENTS_APP: LauncherApp = {
   url: '/gram/',
 };
 
-export const ADMIN_WALLPAPER_SRC = `${BASE}wallpapers/admin-bg.png`;
+export const ADMIN_WALLPAPER_SRC = `${BASE}wallpapers/admin-bg.webp`;
 
 export const ADMIN_GATE_APP: LauncherApp = {
   id: 'admin-sso-gate',

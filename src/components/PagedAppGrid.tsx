@@ -412,7 +412,7 @@ export function PagedAppGrid({
                       )}
                     </div>
 
-                    <span className="mt-1.5 max-w-[74px] truncate rounded-md bg-slate-950/45 px-1.5 py-0.5 text-center text-[11px] font-medium text-white drop-shadow backdrop-blur-[2px]">
+                    <span className="mt-1.5 max-w-[74px] truncate rounded-md bg-slate-950/60 px-1.5 py-0.5 text-center text-[11px] font-medium text-white drop-shadow">
                       {app.name}
                     </span>
                   </div>
