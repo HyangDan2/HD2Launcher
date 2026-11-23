@@ -30,6 +30,14 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+@media (orientation: landscape) and (max-height: 540px) {
+  .launcher-safe-area {
+    padding-top: 0px;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
 @keyframes jiggle {
   0%, 100% {
     transform: rotate(-1.5deg);

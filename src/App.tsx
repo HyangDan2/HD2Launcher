@@ -84,18 +84,20 @@ function buildInitialSlots(): (string | null)[] {
   return slots;
 }
 
+const DESKTOP_MEDIA_QUERY = '(min-width: 768px) and (min-height: 540px)';
+
 function Launcher() {
   const music = useMusicLauncher();
   const [isLocked, setIsLocked] = useState(true);
   const [isDesktop, setIsDesktop] = useState(() =>
     typeof window !== 'undefined'
-      ? window.matchMedia('(min-width: 768px)').matches
+      ? window.matchMedia(DESKTOP_MEDIA_QUERY).matches
       : false,
   );
   const [ssoAuthenticated, setSsoAuthenticated] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)');
+    const mq = window.matchMedia(DESKTOP_MEDIA_QUERY);
     const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);

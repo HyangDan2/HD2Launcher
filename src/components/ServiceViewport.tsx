@@ -4,7 +4,6 @@ import {
   IframeHistoryTracker,
   type FrameWindowLike,
 } from '../data/iframeHistory';
-import { ShieldAlert } from 'lucide-react';
 import {
   useEffect,
   useImperativeHandle,
@@ -84,14 +83,6 @@ export function ServiceViewport({ app, ref }: ServiceViewportProps) {
           className="h-full w-full border-0 bg-white"
           sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
         />
-
-        {/* Subtle notice for X-Frame-Options protected services */}
-        <div className="pointer-events-none absolute right-2 bottom-2 left-2 flex justify-center">
-          <div className="pointer-events-none flex items-center gap-1.5 rounded-full border border-white/10 bg-slate-950/80 px-3 py-1 text-[10px] text-slate-300 backdrop-blur-md">
-            <ShieldAlert className="h-3 w-3 text-amber-400" />
-            <span>화면이 보이지 않으면 우측 상단 &ldquo;새 탭&rdquo;을 눌러주세요.</span>
-          </div>
-        </div>
       </div>
     </div>
   );

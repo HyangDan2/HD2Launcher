@@ -10,7 +10,7 @@ interface ServiceTopBarProps {
 
 export function ServiceTopBar({ app, onReload, onClose }: ServiceTopBarProps) {
   return (
-    <header className="flex h-11 shrink-0 items-center justify-between border-b border-white/10 bg-slate-900/95 px-3">
+    <header className="flex h-11 shrink-0 items-center justify-between border-b border-white/10 bg-slate-900/95 px-3 [@media(orientation:landscape)_and_(max-height:540px)]:h-9">
       <div className="flex min-w-0 items-center gap-2">
         <div
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${app.gradient} text-white`}
