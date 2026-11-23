@@ -1,4 +1,4 @@
-import { embeddedAppUrl } from '../data/embed';
+import { broadcastLauncherViewport, embeddedAppUrl } from '../data/embed';
 import {
   attachSameOriginHistoryListeners,
   IframeHistoryTracker,
@@ -32,8 +32,17 @@ export function ServiceViewport({ app, ref }: ServiceViewportProps) {
     trackerRef.current.reset();
   }, [app.id, reloadSeq]);
 
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => broadcastLauncherViewport(frame));
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [app.id, reloadSeq]);
+
   const handleFrameLoad = () => {
     trackerRef.current.onLoadCleared();
+    broadcastLauncherViewport(frameRef.current);
     const win = frameRef.current?.contentWindow as
       | FrameWindowLike
       | null

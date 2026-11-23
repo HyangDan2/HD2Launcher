@@ -1,5 +1,6 @@
 import { Music2, Pause, Play } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { broadcastLauncherViewport } from '../data/embed';
 import { attachSameOriginHistoryListeners, IframeHistoryTracker, type FrameWindowLike } from '../data/iframeHistory';
 import { ServiceTopBar } from './ServiceTopBar';
 
@@ -147,6 +148,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
 
   const onFrameLoad = useCallback(() => {
     trackerRef.current.onLoadCleared();
+    broadcastLauncherViewport(frame.current);
     const win = frame.current?.contentWindow as FrameWindowLike | null | undefined;
     if (!win) return;
     try {
