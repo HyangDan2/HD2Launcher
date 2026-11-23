@@ -3,14 +3,20 @@ export interface FrameNavigationLike {
   back: () => { committed: Promise<unknown>; finished: Promise<unknown> };
 }
 
+export interface Hd2LauncherControlsLike {
+  goBack?: () => boolean;
+}
+
 export type FrameWindowLike = Window & {
   navigation?: FrameNavigationLike;
+  hd2LauncherControls?: Hd2LauncherControlsLike;
   __hd2LauncherHistoryPatched?: boolean;
 };
 
 /**
  * Pure history-depth tracker for an embedded iframe.
  * Works across:
+ * 0) Same-origin SPA bridge (`window.hd2LauncherControls.goBack()`)
  * 1) Browsers with Navigation API (Chrome / Edge / Android Chrome)
  * 2) Same-origin iframes without Navigation API (iOS Safari / iOS Chrome / Firefox)
  *    via load + pushState/replaceState/hashchange/popstate tracking
@@ -94,6 +100,15 @@ export class IframeHistoryTracker {
   ): boolean {
     if (!frameWindow) return false;
 
+    // 0. Prefer same-origin SPA back bridge (handles React/DOM state views without pushState)
+    try {
+      if (frameWindow.hd2LauncherControls?.goBack?.() === true) {
+        return true;
+      }
+    } catch {
+      // Cross-origin access throws SecurityError or app handler failed -> fall through
+    }
+
     // 1. Prefer Navigation API when available on same-origin iframes (Chrome/Edge)
     try {
       const navigation = frameWindow.navigation;
@@ -150,6 +165,75 @@ export class IframeHistoryTracker {
       return true;
     }
 
+    return false;
+  }
+}
+
+export function attachSameOriginHistoryListeners(
+  win: FrameWindowLike,
+  tracker: IframeHistoryTracker,
+): void {
+  if (win.__hd2LauncherHistoryPatched) return;
+  win.__hd2LauncherHistoryPatched = true;
+
+  try {
+    const origPushState = win.history.pushState.bind(win.history);
+    win.history.pushState = function (...args) {
+      origPushState(...args);
+      try {
+        tracker.recordSameOriginUrl(win.location.href);
+      } catch {
+        // ignore
+      }
+    };
+
+    const origReplaceState = win.history.replaceState.bind(win.history);
+    win.history.replaceState = function (...args) {
+      origReplaceState(...args);
+      try {
+        tracker.replaceSameOriginUrl(win.location.href);
+      } catch {
+        // ignore
+      }
+    };
+
+    const handleLocationChange = () => {
+      try {
+        tracker.recordSameOriginUrl(win.location.href);
+      } catch {
+        // ignore
+      }
+    };
+
+    win.addEventListener('hashchange', handleLocationChange);
+    win.addEventListener('popstate', handleLocationChange);
+  } catch {
+    // ignore if window became cross-origin
+  }
+}
+
+export class DoubleBackExitGuard {
+  private deadline = 0;
+  private readonly windowMs: number;
+
+  constructor(windowMs = 2000) {
+    this.windowMs = windowMs;
+  }
+
+  reset(): void {
+    this.deadline = 0;
+  }
+
+  /**
+   * Returns `true` if a second back press arrived within `windowMs` (confirmed exit),
+   * or `false` on the first press (arming the exit window).
+   */
+  attemptExit(now = Date.now()): boolean {
+    if (this.deadline > 0 && now <= this.deadline) {
+      this.deadline = 0;
+      return true;
+    }
+    this.deadline = now + this.windowMs;
     return false;
   }
 }

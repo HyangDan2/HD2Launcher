@@ -1,5 +1,6 @@
 import { embeddedAppUrl } from '../data/embed';
 import {
+  attachSameOriginHistoryListeners,
   IframeHistoryTracker,
   type FrameWindowLike,
 } from '../data/iframeHistory';
@@ -32,46 +33,6 @@ export function ServiceViewport({ app, ref }: ServiceViewportProps) {
     trackerRef.current.reset();
   }, [app.id, reloadSeq]);
 
-  const attachSameOriginListeners = (win: FrameWindowLike) => {
-    if (win.__hd2LauncherHistoryPatched) return;
-    win.__hd2LauncherHistoryPatched = true;
-
-    try {
-      const origPushState = win.history.pushState.bind(win.history);
-      win.history.pushState = function (...args) {
-        origPushState(...args);
-        try {
-          trackerRef.current.recordSameOriginUrl(win.location.href);
-        } catch {
-          // ignore
-        }
-      };
-
-      const origReplaceState = win.history.replaceState.bind(win.history);
-      win.history.replaceState = function (...args) {
-        origReplaceState(...args);
-        try {
-          trackerRef.current.replaceSameOriginUrl(win.location.href);
-        } catch {
-          // ignore
-        }
-      };
-
-      const handleLocationChange = () => {
-        try {
-          trackerRef.current.recordSameOriginUrl(win.location.href);
-        } catch {
-          // ignore
-        }
-      };
-
-      win.addEventListener('hashchange', handleLocationChange);
-      win.addEventListener('popstate', handleLocationChange);
-    } catch {
-      // ignore if window became cross-origin
-    }
-  };
-
   const handleFrameLoad = () => {
     trackerRef.current.onLoadCleared();
     const win = frameRef.current?.contentWindow as
@@ -83,7 +44,7 @@ export function ServiceViewport({ app, ref }: ServiceViewportProps) {
     try {
       const href = win.location.href;
       trackerRef.current.recordSameOriginUrl(href);
-      attachSameOriginListeners(win);
+      attachSameOriginHistoryListeners(win, trackerRef.current);
     } catch {
       trackerRef.current.recordCrossOriginLoad();
     }

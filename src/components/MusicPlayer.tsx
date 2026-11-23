@@ -1,5 +1,6 @@
 import { Music2, Play } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { attachSameOriginHistoryListeners, IframeHistoryTracker, type FrameWindowLike } from '../data/iframeHistory';
 import { ServiceTopBar } from './ServiceTopBar';
 
 const MUSIC_PATH = '/sona/';
@@ -19,6 +20,9 @@ type MusicContext = {
   visible: boolean;
   open: () => void;
   stop: () => void;
+  goBack: () => boolean;
+  onFrameLoad: () => void;
+  resetHistory: () => void;
 };
 const Context = createContext<MusicContext | null>(null);
 
@@ -52,20 +56,45 @@ function stopPlayback(frame: HTMLIFrameElement | null) {
 
 export function MusicPlayerProvider({ children }: { children: ReactNode }) {
   const frame = useRef<HTMLIFrameElement>(null);
+  const trackerRef = useRef(new IframeHistoryTracker());
   const [track, setTrack] = useState<Track | null>(null);
   const [visible, setVisible] = useState(false);
   const opener = useRef<HTMLElement | null>(null);
 
   const open = useCallback(() => {
+    trackerRef.current.reset();
     opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setVisible(true);
   }, []);
 
   const stop = useCallback(() => {
+    trackerRef.current.reset();
     stopPlayback(frame.current);
     setVisible(false);
     opener.current?.focus();
     opener.current = null;
+  }, []);
+
+  const resetHistory = useCallback(() => {
+    trackerRef.current.reset();
+  }, []);
+
+  const onFrameLoad = useCallback(() => {
+    trackerRef.current.onLoadCleared();
+    const win = frame.current?.contentWindow as FrameWindowLike | null | undefined;
+    if (!win) return;
+    try {
+      const href = win.location.href;
+      trackerRef.current.recordSameOriginUrl(href);
+      attachSameOriginHistoryListeners(win, trackerRef.current);
+    } catch {
+      trackerRef.current.recordCrossOriginLoad();
+    }
+  }, []);
+
+  const goBack = useCallback(() => {
+    const win = frame.current?.contentWindow as FrameWindowLike | null | undefined;
+    return trackerRef.current.goBack(win, window);
   }, []);
 
   // Preload first recommended track from /sona/api/v1/catalog for the Home widget
@@ -102,11 +131,11 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('message', receive);
   }, [visible]);
 
-  return <Context.Provider value={{ track, frame, visible, open, stop }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ track, frame, visible, open, stop, goBack, onFrameLoad, resetHistory }}>{children}</Context.Provider>;
 }
 
 export function MusicPlayerSurface({ desktop = false }: { desktop?: boolean }) {
-  const { visible, frame, stop } = useMusicLauncher();
+  const { visible, frame, stop, onFrameLoad, resetHistory } = useMusicLauncher();
   const [reloadSeq, setReloadSeq] = useState(0);
   const surface = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -118,10 +147,11 @@ export function MusicPlayerSurface({ desktop = false }: { desktop?: boolean }) {
     <section ref={surface} tabIndex={-1} aria-label="HD2Music 플레이어"
       className="absolute inset-0 z-[25] flex flex-col bg-slate-950 text-white md:z-40">
       <ServiceTopBar app={MUSIC_APP} onClose={desktop ? stop : undefined} onReload={() => {
+        resetHistory();
         stopPlayback(frame.current);
         setReloadSeq((sequence) => sequence + 1);
       }} />
-      <iframe key={reloadSeq} ref={frame} title="HD2Music" src={MUSIC_PATH + '?embed=launcher'}
+      <iframe key={reloadSeq} ref={frame} onLoad={onFrameLoad} title="HD2Music" src={MUSIC_PATH + '?embed=launcher'}
         className="min-h-0 w-full flex-1 border-0" allow="autoplay"
         sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups" />
     </section>

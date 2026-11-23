@@ -13,6 +13,7 @@ import { UpdateLogView } from './components/UpdateLogView';
 import { WallpaperModal } from './components/WallpaperModal';
 import { WidgetHome } from './components/WidgetHome';
 import { mergeServerCatalog, readServerCatalog, readWebCatalog } from './data/catalog';
+import { DoubleBackExitGuard } from './data/iframeHistory';
 import { ADMIN_START, SLOTS_PER_PAGE, TOTAL_SLOTS, getPageStarts, isAdminPage, placeWebApps } from './data/layout';
 import {
   ADMIN_ADD_APP,
@@ -333,6 +334,7 @@ function Launcher() {
   const [editMode, setEditMode] = useState(false);
   const [activeApp, setActiveApp] = useState<LauncherApp | null>(null);
   const serviceViewportRef = useRef<ServiceViewportHandle>(null);
+  const backExitGuardRef = useRef(new DoubleBackExitGuard(2000));
   const [isAppListOpen, setIsAppListOpen] = useState(false);
   const [isWallpaperOpen, setIsWallpaperOpen] = useState(false);
   const [isAddAppOpen, setIsAddAppOpen] = useState(false);
@@ -445,6 +447,7 @@ function Launcher() {
   };
 
   const handleLaunchApp = (app: LauncherApp) => {
+    backExitGuardRef.current.reset();
     setIsAppListOpen(false);
     setIsWallpaperOpen(false);
     if (isMusicApp(app.url)) {
@@ -470,22 +473,45 @@ function Launcher() {
     setActiveApp(app);
   };
 
+  const confirmAppExit = (onExit: () => void) => {
+    if (backExitGuardRef.current.attemptExit()) {
+      setToastMessage(null);
+      onExit();
+      return;
+    }
+    setToastMessage('한 번 더 누르면 앱을 닫습니다');
+  };
+
   const handleNavBack = () => {
     if (music.visible) {
-      music.stop();
+      if (music.goBack()) {
+        backExitGuardRef.current.reset();
+        return;
+      }
+      confirmAppExit(() => music.stop());
       return;
     }
     if (isWallpaperOpen) {
+      backExitGuardRef.current.reset();
       setIsWallpaperOpen(false);
       return;
     }
     if (isAppListOpen) {
+      backExitGuardRef.current.reset();
       setIsAppListOpen(false);
       return;
     }
     if (activeApp) {
-      if (serviceViewportRef.current?.goBack()) return;
-      setActiveApp(null);
+      if (activeApp.internalView) {
+        backExitGuardRef.current.reset();
+        setActiveApp(null);
+        return;
+      }
+      if (serviceViewportRef.current?.goBack()) {
+        backExitGuardRef.current.reset();
+        return;
+      }
+      confirmAppExit(() => setActiveApp(null));
       return;
     }
     if (editMode) {
@@ -501,6 +527,7 @@ function Launcher() {
   };
 
   const handleNavHome = () => {
+    backExitGuardRef.current.reset();
     music.stop();
     setIsWallpaperOpen(false);
     setIsAppListOpen(false);
