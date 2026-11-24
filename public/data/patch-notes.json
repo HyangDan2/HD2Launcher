@@ -1,5 +1,63 @@
 [
   {
+    "id": "sync-2026-11-23",
+    "version": "2026.11.23",
+    "date": "2026-11-23 08:56 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 12건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(nav): rename the five Nordic app entries in the Apps menu (#97)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/ApplicationHub] chore(catalog): rename the five Nordic apps on the shelf (#39)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/GameHub] chore(nav): rename the five Nordic app entries in the Apps menu (#25)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/TechnicalHub] chore(nav): rename the five Nordic app entries in the Apps menu (#30)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/diary] docs(devlog): KO·EN 문장 다듬기 (#30)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(devlog): 밤사이 아홉 개 프로젝트 안정화 글(KO·EN) 추가 (#29)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/diary] chore(nav): rename the five Nordic app entries in the Apps menu (#28)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Launcher/HD2Launcher] feat: open supported apps in launcher embedded mode"
+      },
+      {
+        "type": "FIX",
+        "text": "[Launcher/HD2Launcher] fix: preserve installed launcher layout and auto-place Web-HQ apps"
+      },
+      {
+        "type": "FIX",
+        "text": "[Launcher/HD2Launcher] fix: sync Web-HQ Info links and refresh ApplicationHub titles"
+      },
+      {
+        "type": "FIX",
+        "text": "[Launcher/HD2Launcher] fix: keep launcher controls in the mobile safe area"
+      },
+      {
+        "type": "FIX",
+        "text": "[Launcher/HD2Launcher] fix: keep launcher controls available in music and Moments"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-22",
     "version": "2026.11.22",
     "date": "2026-11-22 08:39 KST",
