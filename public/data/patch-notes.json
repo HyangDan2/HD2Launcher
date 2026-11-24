@@ -1,5 +1,95 @@
 [
   {
+    "id": "sync-2026-11-24",
+    "version": "2026.11.24",
+    "date": "2026-11-24 13:09 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 26건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(cache): bump hd2-theme.css and style.css to ?v=20261124-switch (#102)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] style(theme): match the Diary switch look (58×30, white thumb) (#101)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(theme): header slide switch and a corner share button (#100)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/HyangDan2.github.io] feat(web-hq): drop the Explore the hubs section from the landing page (#99)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/ApplicationHub] chore(cache): bump style.css to ?v=20261124-switch (#42)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/ApplicationHub] style(theme): match the Diary switch look (58×30, white thumb) (#41)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/ApplicationHub] feat(theme): header slide switch and a corner share button (#40)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/GameHub] chore(cache): bump style.css to ?v=20261124-switch (#28)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/GameHub] style(theme): match the Diary switch look (58×30, white thumb) (#27)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/GameHub] feat(theme): header slide switch and a corner share button (#26)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/TechnicalHub] chore(cache): bump hub and profile styles to ?v=20261124-switch (#33)"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/TechnicalHub] style(theme): match the Diary switch look (58×30, white thumb) (#32)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/TechnicalHub] feat(theme): header slide switch and a corner share button (#31)"
+      },
+      {
+        "type": "NEW",
+        "text": "[Web-HQ/diary] feat(ui): 헤더 테마 슬라이드 토글 + 우하단 Soft Iris 솔리드 공유 버튼 (#38)"
+      },
+      {
+        "type": "FIX",
+        "text": "[Web-HQ/diary] fix(share): keep the copy toast on screen for 3s (#36)"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-23",
     "version": "2026.11.23",
     "date": "2026-11-23 08:56 KST",
