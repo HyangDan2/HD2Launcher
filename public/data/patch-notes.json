@@ -1,5 +1,23 @@
 [
   {
+    "id": "sync-2026-11-26",
+    "version": "2026.11.26",
+    "date": "2026-11-26 11:00 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 2건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      },
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/diary] post: Sigrún — from chart engine to v1.0.0-rc.1"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-25",
     "version": "2026.11.25",
     "date": "2026-11-25 11:52 KST",
