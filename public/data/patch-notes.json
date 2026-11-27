@@ -1,5 +1,19 @@
 [
   {
+    "id": "sync-2026-11-27",
+    "version": "2026.11.27",
+    "date": "2026-11-27 10:59 KST",
+    "target": "Web-HQ",
+    "title": "04:00 정기 동기화 및 패치 기록",
+    "summary": "최근 24시간 동안 반영된 변경사항 1건을 기록했습니다.",
+    "changes": [
+      {
+        "type": "IMPROVE",
+        "text": "[Web-HQ/HyangDan2.github.io] chore(data): refresh the latest updates snapshot"
+      }
+    ]
+  },
+  {
     "id": "sync-2026-11-26",
     "version": "2026.11.26",
     "date": "2026-11-26 11:00 KST",
